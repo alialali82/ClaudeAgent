@@ -1,15 +1,13 @@
 import re
-import sys
-import subprocess
 
-def _ensure_package():
-    try:
-        from youtube_transcript_api import YouTubeTranscriptApi
-        return YouTubeTranscriptApi
-    except ImportError:
-        subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'youtube-transcript-api'])
-        from youtube_transcript_api import YouTubeTranscriptApi
-        return YouTubeTranscriptApi
+try:
+    from youtube_transcript_api import YouTubeTranscriptApi
+except ImportError:
+    raise ImportError(
+        "youtube-transcript-api is not installed.\n"
+        "Install it via the PythonAnywhere Bash console:\n"
+        "  pip install --user youtube-transcript-api"
+    )
 
 def extract_video_id(url):
     patterns = [
@@ -50,8 +48,6 @@ def main(input_data):
         video_id = extract_video_id(video_url)
         if not video_id:
             return {'error': 'Could not extract video ID from URL', 'transcript': ''}
-
-        YouTubeTranscriptApi = _ensure_package()
 
         preferred_languages = input_data.get('languages', ['en', 'en-US', 'en-GB'])
 
