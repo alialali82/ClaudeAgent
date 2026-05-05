@@ -23,14 +23,23 @@ def extract_video_id(url):
             return match.group(1)
     return None
 
+def get_text(entry):
+    return entry['text'] if isinstance(entry, dict) else entry.text
+
+def get_start(entry):
+    return entry['start'] if isinstance(entry, dict) else entry.start
+
+def get_duration(entry):
+    return entry.get('duration', 0) if isinstance(entry, dict) else entry.duration
+
 def format_transcript(transcript_list):
     lines = []
     total_duration = 0.0
     for entry in transcript_list:
-        text = entry['text'].replace('\n', ' ').strip()
+        text = get_text(entry).replace('\n', ' ').strip()
         if text:
             lines.append(text)
-        total_duration = max(total_duration, entry.get('start', 0) + entry.get('duration', 0))
+        total_duration = max(total_duration, get_start(entry) + get_duration(entry))
     return ' '.join(lines), total_duration
 
 def main(input_data):
@@ -51,16 +60,18 @@ def main(input_data):
 
         preferred_languages = input_data.get('languages', ['en', 'en-US', 'en-GB'])
 
+        api = YouTubeTranscriptApi()
+
         try:
-            transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=preferred_languages)
+            transcript = api.fetch(video_id, languages=preferred_languages)
         except Exception:
             try:
                 # Fall back to any available language
-                transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
+                transcript = api.fetch(video_id)
             except Exception as e:
                 return {'error': f'Transcript extraction failed: {str(e)}', 'transcript': ''}
 
-        formatted_transcript, duration = format_transcript(transcript_list)
+        formatted_transcript, duration = format_transcript(transcript)
         word_count = len(formatted_transcript.split())
 
         return {
