@@ -55,12 +55,8 @@ def main(input_data):
             transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=preferred_languages)
         except Exception:
             try:
-                # Fall back to any available transcript
-                transcripts = YouTubeTranscriptApi.list_transcripts(video_id)
-                transcript_list = transcripts.find_generated_transcript(
-                    transcripts._manually_created_transcripts or
-                    list(transcripts._generated_transcripts.keys())
-                ).fetch()
+                # Fall back to any available language
+                transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
             except Exception as e:
                 return {'error': f'Transcript extraction failed: {str(e)}', 'transcript': ''}
 
