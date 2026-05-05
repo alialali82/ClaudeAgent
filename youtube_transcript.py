@@ -77,7 +77,7 @@ def main(input_data):
 
 # Example usage
 if __name__ == '__main__':
-    result = main({'url': 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'})
+    result = main({'url': 'https://youtu.be/MJQsmzVJ0Iw'})
     if result.get('success'):
         print(f"Video ID   : {result['video_id']}")
         print(f"Words      : {result['word_count']}")
