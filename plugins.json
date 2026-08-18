@@ -5,7 +5,9 @@
       "name": "marketingskills",
       "owner": "coreyhaines31",
       "addedDate": "2026-08-18",
-      "source": "marketplace"
+      "source": "marketplace",
+      "installed": true,
+      "installedDate": "2026-08-18"
     }
   ]
 }
