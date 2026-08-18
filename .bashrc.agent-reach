@@ -1,0 +1,61 @@
+#!/bin/bash
+# Agent Reach Convenience Functions
+# Source this file: source ~/.bashrc.agent-reach
+
+# Activate Agent Reach environment
+activate-agent-reach() {
+    if [ -d "$HOME/.agent-reach-venv" ]; then
+        source "$HOME/.agent-reach-venv/bin/activate"
+        echo "✅ Agent Reach environment activated (v$(agent-reach --version 2>/dev/null | cut -d' ' -f3))"
+    else
+        echo "❌ Agent Reach not found at $HOME/.agent-reach-venv"
+        echo "   Please install: https://raw.githubusercontent.com/Panniantong/agent-reach/main/docs/install.md"
+    fi
+}
+
+# Quick doctor check
+agent-reach-check() {
+    activate-agent-reach > /dev/null 2>&1 || return 1
+    agent-reach doctor "$@"
+}
+
+# Install optional channels
+agent-reach-add() {
+    if [ -z "$1" ]; then
+        echo "Usage: agent-reach-add <channel1> [channel2] ... [all]"
+        echo "Examples:"
+        echo "  agent-reach-add twitter             # Install Twitter support"
+        echo "  agent-reach-add reddit xiaohongshu  # Install multiple channels"
+        echo "  agent-reach-add all                 # Install all channels"
+        return 1
+    fi
+    activate-agent-reach > /dev/null 2>&1 || return 1
+    agent-reach install --env=auto --system --channels=$(IFS=,; echo "$*")
+}
+
+# Configure a channel
+agent-reach-config() {
+    if [ -z "$1" ]; then
+        echo "Usage: agent-reach-config <setting>"
+        echo "Examples:"
+        echo "  agent-reach-config twitter-cookies"
+        echo "  agent-reach-config groq-key"
+        echo "  agent-reach-config proxy"
+        return 1
+    fi
+    activate-agent-reach > /dev/null 2>&1 || return 1
+    agent-reach configure "$1"
+}
+
+# Health check with detailed output
+agent-reach-health() {
+    activate-agent-reach > /dev/null 2>&1 || return 1
+    echo "🏥 Agent Reach Health Check"
+    echo "================================"
+    agent-reach doctor --json 2>/dev/null | python3 -m json.tool 2>/dev/null || agent-reach doctor
+}
+
+# Export PATH for easy access
+export PATH="$HOME/.agent-reach-venv/bin:$PATH"
+
+echo "💡 Agent Reach functions loaded. Try: activate-agent-reach"
