@@ -28,7 +28,7 @@ An artifact page's network is blocked, `mcp`/`sample` run on the viewer's own ac
 | Data sources | The same as the routine (see §4), fetched server-side |
 | Scraping | Via the Firecrawl API where direct requests are blocked; direct where they work |
 | Image/PDF reading | Claude API (vision and native PDF), server-side |
-| Excel/CSV | Parsed in the browser with SheetJS; the file never leaves the device |
+| Excel/CSV | Parsed in the browser with `read-excel-file` + `papaparse` (the npm SheetJS build is unmaintained with known vulnerabilities); `.xls` is rejected with "save as .xlsx"; the file never leaves the device |
 | User data | Stateless, in memory only |
 | Market data cache | Shared, per ticker, no user data (Upstash Redis or Vercel KV) |
 | Currency | USD only in v1 |
