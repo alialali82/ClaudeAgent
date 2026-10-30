@@ -1,3 +1,4 @@
+import { guardRequest } from "@/lib/guard/guard";
 import {
   ExtractInvalidOutputError,
   ExtractUnavailableError,
@@ -15,18 +16,24 @@ function respond(body: unknown, status = 200): Response {
 }
 const fail = (error: string, status: number) => respond({ error }, status);
 
-// Task 10 replaces this no-op with the rate-limit / captcha guard (return a Response to block).
-async function beforeHandle(req: Request): Promise<Response | null> {
-  void req;
-  return null;
-}
-
 export async function POST(req: Request): Promise<Response> {
-  const blocked = await beforeHandle(req);
-  if (blocked) return blocked;
+  // Guard first: rate limit, captcha and spend cap, before the body is read.
+  const guard = await guardRequest(req, { route: "extract", needsCaptcha: true });
+  if (!guard.ok) {
+    return Response.json(
+      { error: guard.code },
+      {
+        status: guard.status,
+        headers: { "Cache-Control": "no-store", ...(guard.status === 429 ? { "Retry-After": "3600" } : {}) },
+      },
+    );
+  }
 
-  const declared = Number(req.headers.get("content-length"));
-  if (Number.isFinite(declared) && declared > MAX_BODY_BYTES) return fail("too_large", 413);
+  // A declared length is required so oversized uploads are refused before buffering.
+  const header = req.headers.get("content-length");
+  const declared = header === null || header.trim() === "" ? NaN : Number(header);
+  if (!Number.isFinite(declared) || declared < 0) return fail("length_required", 411);
+  if (declared > MAX_BODY_BYTES) return fail("too_large", 413);
 
   let form: FormData;
   try {
