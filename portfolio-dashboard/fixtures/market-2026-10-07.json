@@ -1,0 +1,1971 @@
+{
+  "asof": "2026-10-07",
+  "prevAsof": "2026-10-06",
+  "tickers": {
+    "ADBE": {
+      "name": "Adobe",
+      "sector": "Technology",
+      "price": 232.73,
+      "cons": 275.06,
+      "low": 195,
+      "high": 373,
+      "n": 39,
+      "src": "S&P Global via StockAnalysis; Zacks via Nasdaq; named calls via StockAnalysis",
+      "tgt": "2026-10-02",
+      "prev": {
+        "price": 238.12,
+        "cons": 275.06,
+        "low": 195,
+        "high": 373,
+        "zacks": 265.64
+      },
+      "next": {
+        "date": "2026-12-09",
+        "what": "FQ4 results, after close",
+        "conf": true
+      },
+      "events": [
+        {
+          "date": "2026-12-01",
+          "what": "Anil Chakravarthy becomes CEO, Narayen moves to Executive Chair",
+          "conf": true
+        }
+      ],
+      "beta": 0.36,
+      "zacks": {
+        "cons": 265.64,
+        "low": 195,
+        "high": 373
+      },
+      "calls": [
+        [
+          "TD Cowen",
+          245,
+          "2026-10-02"
+        ],
+        [
+          "Goldman Sachs",
+          200,
+          "2026-10-02"
+        ],
+        [
+          "Phillip Securities",
+          261,
+          "2026-09-18"
+        ],
+        [
+          "Bernstein",
+          373,
+          "2026-09-15"
+        ],
+        [
+          "Citi",
+          250,
+          "2026-09-14"
+        ],
+        [
+          "D.A. Davidson",
+          290,
+          "2026-09-11"
+        ]
+      ],
+      "er": {
+        "eps": 5.11,
+        "q": "Nov 2026",
+        "nEst": 12,
+        "hist": [
+          [
+            "2026-09-10",
+            -2.26,
+            -1
+          ],
+          [
+            "2026-06-11",
+            -3.38,
+            -12.6
+          ],
+          [
+            "2026-03-12",
+            -0.41,
+            -8.9
+          ],
+          [
+            "2025-12-10",
+            3.64,
+            1.8
+          ]
+        ]
+      }
+    },
+    "ALB": {
+      "name": "Albemarle",
+      "sector": "Materials",
+      "price": 102.74,
+      "cons": 168.56,
+      "low": 83.28,
+      "high": 225,
+      "n": 22,
+      "src": "S&P Global via StockAnalysis; Zacks via Nasdaq; named calls via StockAnalysis",
+      "tgt": "2026-10-07",
+      "prev": {
+        "price": 106.32,
+        "cons": 171.06,
+        "low": 83.28,
+        "high": 225,
+        "zacks": 170.69
+      },
+      "next": {
+        "date": "2026-11-04",
+        "what": "Q3 results, after close (call 5 Nov, 8am ET)",
+        "conf": true
+      },
+      "beta": 1.5,
+      "zacks": {
+        "cons": 168.14,
+        "low": 130,
+        "high": 225
+      },
+      "calls": [
+        [
+          "Argus Research",
+          135,
+          "2026-10-07"
+        ],
+        [
+          "Morgan Stanley",
+          161,
+          "2026-10-07"
+        ],
+        [
+          "BMO Capital",
+          175,
+          "2026-10-06"
+        ],
+        [
+          "UBS",
+          150,
+          "2026-10-05"
+        ],
+        [
+          "Mizuho Securities",
+          130,
+          "2026-10-01"
+        ],
+        [
+          "Jefferies",
+          211,
+          "2026-09-11"
+        ],
+        [
+          "J.P. Morgan",
+          140,
+          "2026-08-25"
+        ],
+        [
+          "DBS",
+          170,
+          "2026-08-20"
+        ],
+        [
+          "Truist Financial",
+          225,
+          "2026-08-11"
+        ],
+        [
+          "Scotiabank",
+          190,
+          "2026-08-10"
+        ],
+        [
+          "Evercore ISI",
+          180,
+          "2026-08-07"
+        ]
+      ],
+      "er": {
+        "eps": 2.55,
+        "q": "Sep 2026",
+        "nEst": 6,
+        "hist": [
+          [
+            "2026-08-05",
+            11.94,
+            3.8
+          ],
+          [
+            "2026-05-06",
+            137.9,
+            1.8
+          ],
+          [
+            "2026-02-11",
+            -32.5,
+            -5.7
+          ],
+          [
+            "2025-11-05",
+            79.35,
+            3.2
+          ]
+        ]
+      }
+    },
+    "BABA": {
+      "name": "Alibaba",
+      "sector": "Consumer Discretionary",
+      "price": 106.96,
+      "cons": 185.51,
+      "low": 95.27,
+      "high": 238.4,
+      "n": 40,
+      "src": "S&P Global via StockAnalysis; Zacks via Nasdaq; named calls via StockAnalysis",
+      "tgt": "2026-10-08",
+      "prev": {
+        "price": 109.27,
+        "cons": 185.41,
+        "low": 95.26,
+        "high": 238.37,
+        "zacks": 191.19
+      },
+      "next": {
+        "date": "2026-11-24",
+        "what": "Sep-quarter results (estimate; StockAnalysis and Nasdaq agree)",
+        "conf": false
+      },
+      "beta": 1.27,
+      "zacks": {
+        "cons": 191.46,
+        "low": 160,
+        "high": 220.1
+      },
+      "calls": [
+        [
+          "Citi",
+          193,
+          "2026-10-08"
+        ],
+        [
+          "Morgan Stanley",
+          180,
+          "2026-10-08"
+        ],
+        [
+          "Barclays",
+          200,
+          "2026-09-24"
+        ],
+        [
+          "DBS",
+          207,
+          "2026-09-23"
+        ],
+        [
+          "Bernstein",
+          165,
+          "2026-09-22"
+        ],
+        [
+          "UBS",
+          206,
+          "2026-09-22"
+        ],
+        [
+          "Bank of America Securities",
+          175,
+          "2026-09-22"
+        ],
+        [
+          "Susquehanna",
+          190,
+          "2026-08-28"
+        ]
+      ],
+      "er": {
+        "eps": 1.34,
+        "q": "Sep 2026",
+        "nEst": 3,
+        "hist": [
+          [
+            "2026-08-20",
+            -43.26,
+            -7.4
+          ],
+          [
+            "2026-05-13",
+            -106.86,
+            4.7
+          ],
+          [
+            "2026-03-19",
+            -48.57,
+            -8.9
+          ],
+          [
+            "2025-11-25",
+            -10.2,
+            -1.9
+          ]
+        ]
+      }
+    },
+    "GOOGL": {
+      "name": "Alphabet",
+      "sector": "Communication Services",
+      "price": 350.4,
+      "cons": 429.47,
+      "low": 340,
+      "high": 515,
+      "n": 62,
+      "src": "S&P Global via StockAnalysis; Zacks via Nasdaq; named calls via StockAnalysis",
+      "tgt": "2026-10-07",
+      "prev": {
+        "price": 347.68,
+        "cons": 429.36,
+        "low": 340,
+        "high": 515,
+        "zacks": 428.12
+      },
+      "next": {
+        "date": "2026-10-28",
+        "what": "Q3 results, after close",
+        "conf": false
+      },
+      "beta": 1.35,
+      "zacks": {
+        "cons": 427.04,
+        "low": 379,
+        "high": 485
+      },
+      "calls": [
+        [
+          "Morgan Stanley",
+          400,
+          "2026-10-07"
+        ],
+        [
+          "Yorkville Ives & Co",
+          400,
+          "2026-10-07"
+        ],
+        [
+          "Wells Fargo",
+          417,
+          "2026-10-06"
+        ],
+        [
+          "Guggenheim",
+          450,
+          "2026-10-06"
+        ],
+        [
+          "Cantor Fitzgerald",
+          420,
+          "2026-10-05"
+        ],
+        [
+          "Jefferies",
+          445,
+          "2026-10-01"
+        ],
+        [
+          "J.P. Morgan",
+          420,
+          "2026-10-01"
+        ],
+        [
+          "RBC Capital",
+          425,
+          "2026-10-01"
+        ],
+        [
+          "KeyBanc",
+          435,
+          "2026-10-01"
+        ],
+        [
+          "Bank of America Securities",
+          430,
+          "2026-10-01"
+        ],
+        [
+          "Citi",
+          447,
+          "2026-09-29"
+        ]
+      ],
+      "er": {
+        "eps": 2.95,
+        "q": "Sep 2026",
+        "nEst": 13,
+        "hist": [
+          [
+            "2026-07-22",
+            216.32,
+            -8.5
+          ],
+          [
+            "2026-04-29",
+            93.56,
+            10
+          ],
+          [
+            "2026-02-04",
+            9.73,
+            -2.5
+          ],
+          [
+            "2025-10-29",
+            26.99,
+            5.2
+          ]
+        ]
+      }
+    },
+    "AMZN": {
+      "name": "Amazon",
+      "sector": "Consumer Discretionary",
+      "price": 259.9,
+      "cons": 331.53,
+      "low": 230,
+      "high": 405,
+      "n": 60,
+      "src": "S&P Global via StockAnalysis; Zacks via Nasdaq; named calls via StockAnalysis",
+      "tgt": "2026-10-07",
+      "prev": {
+        "price": 256.29,
+        "cons": 330.59,
+        "low": 230,
+        "high": 405,
+        "zacks": 331.82
+      },
+      "next": {
+        "date": "2026-10-29",
+        "what": "Q3 results, after close",
+        "conf": false
+      },
+      "beta": 1.44,
+      "zacks": {
+        "cons": 332.35,
+        "low": 230,
+        "high": 400
+      },
+      "calls": [
+        [
+          "Goldman Sachs",
+          375,
+          "2026-10-07"
+        ],
+        [
+          "Yorkville Ives & Co",
+          300,
+          "2026-10-07"
+        ],
+        [
+          "Tigress Financial",
+          385,
+          "2026-10-06"
+        ],
+        [
+          "TD Cowen",
+          350,
+          "2026-10-05"
+        ],
+        [
+          "Rosenblatt Securities",
+          360,
+          "2026-09-30"
+        ],
+        [
+          "Bank of America Securities",
+          320,
+          "2026-09-30"
+        ],
+        [
+          "Bernstein",
+          320,
+          "2026-09-28"
+        ],
+        [
+          "Wells Fargo",
+          338,
+          "2026-09-25"
+        ],
+        [
+          "Pivotal Research",
+          333,
+          "2026-09-21"
+        ],
+        [
+          "Rothschild & Co Redburn",
+          230,
+          "2026-09-21"
+        ],
+        [
+          "Citi",
+          350,
+          "2026-09-01"
+        ]
+      ],
+      "er": {
+        "eps": 2.02,
+        "q": "Sep 2026",
+        "nEst": 13,
+        "hist": [
+          [
+            "2026-07-30",
+            2.73,
+            19.8
+          ],
+          [
+            "2026-04-29",
+            -2.5,
+            2.1
+          ],
+          [
+            "2026-02-05",
+            -1.52,
+            -9.7
+          ],
+          [
+            "2025-10-30",
+            23.42,
+            6
+          ]
+        ]
+      }
+    },
+    "BSX": {
+      "name": "Boston Scientific",
+      "sector": "Health Care",
+      "price": 41.58,
+      "cons": 59.9,
+      "low": 44,
+      "high": 94,
+      "n": 31,
+      "src": "S&P Global via StockAnalysis; Zacks via Nasdaq; named calls via StockAnalysis",
+      "tgt": "2026-10-07",
+      "prev": {
+        "price": 42.18,
+        "cons": 61,
+        "low": 44,
+        "high": 94,
+        "zacks": 58.25
+      },
+      "next": {
+        "date": "2026-10-28",
+        "what": "Q3 results, 8am ET",
+        "conf": true
+      },
+      "beta": 0.19,
+      "zacks": {
+        "cons": 57.76,
+        "low": 48,
+        "high": 70
+      },
+      "calls": [
+        [
+          "Barclays",
+          48,
+          "2026-10-07"
+        ],
+        [
+          "Citi",
+          48,
+          "2026-10-05"
+        ],
+        [
+          "Bernstein",
+          54,
+          "2026-10-03"
+        ],
+        [
+          "RBC Capital",
+          70,
+          "2026-10-01"
+        ],
+        [
+          "J.P. Morgan",
+          56,
+          "2026-10-01"
+        ],
+        [
+          "Wells Fargo",
+          48,
+          "2026-09-23"
+        ],
+        [
+          "Oppenheimer",
+          65,
+          "2026-09-21"
+        ],
+        [
+          "Bank of America Securities",
+          54,
+          "2026-09-21"
+        ],
+        [
+          "TD Cowen",
+          56,
+          "2026-09-18"
+        ],
+        [
+          "Jefferies",
+          60,
+          "2026-09-11"
+        ]
+      ],
+      "er": {
+        "eps": 0.76,
+        "q": "Sep 2026",
+        "nEst": 8,
+        "hist": [
+          [
+            "2026-07-29",
+            3.61,
+            -0.1
+          ],
+          [
+            "2026-04-22",
+            0,
+            10.4
+          ],
+          [
+            "2026-02-04",
+            2.56,
+            -15.3
+          ],
+          [
+            "2025-10-22",
+            5.63,
+            2.5
+          ]
+        ]
+      }
+    },
+    "MRAM": {
+      "name": "Everspin Technologies",
+      "sector": "Technology",
+      "price": 17.22,
+      "cons": 25.67,
+      "low": 19,
+      "high": 38,
+      "n": 3,
+      "src": "StockAnalysis (3 analysts, $25.67 avg, unchanged since 6 Aug). Zacks via Nasdaq $28.50 on 2 analysts. Treat every MRAM target as unreliable thinly-covered microcap noise.",
+      "tgt": "2026-08-06",
+      "disputed": true,
+      "prev": {
+        "price": 17.76,
+        "cons": 25.67,
+        "low": 19,
+        "high": 38,
+        "zacks": 28.5
+      },
+      "next": {
+        "date": "2026-11-04",
+        "what": "Q3 results, after close",
+        "conf": false
+      },
+      "beta": 4.17,
+      "zacks": {
+        "cons": 28.5,
+        "low": 19,
+        "high": 38
+      },
+      "calls": [],
+      "er": {
+        "eps": 0.13,
+        "q": "Sep 2026",
+        "nEst": 1,
+        "hist": [
+          [
+            "2026-08-05",
+            150,
+            -10.2
+          ],
+          [
+            "2026-04-29",
+            10,
+            43.5
+          ],
+          [
+            "2026-03-04",
+            -54.55,
+            -14.1
+          ],
+          [
+            "2025-11-05",
+            -100,
+            -11.5
+          ]
+        ]
+      }
+    },
+    "KVYO": {
+      "name": "Klaviyo",
+      "sector": "Technology",
+      "price": 17.43,
+      "cons": 26.57,
+      "low": 19,
+      "high": 36,
+      "n": 23,
+      "src": "S&P Global via StockAnalysis; Zacks via Nasdaq; named calls via StockAnalysis",
+      "tgt": "2026-09-11",
+      "prev": {
+        "price": 16.6,
+        "cons": 26.57,
+        "low": 19,
+        "high": 36,
+        "zacks": 26.53
+      },
+      "next": {
+        "date": "2026-11-04",
+        "what": "Q3 results, after close",
+        "conf": false
+      },
+      "beta": 0.56,
+      "zacks": {
+        "cons": 26.53,
+        "low": 21,
+        "high": 36
+      },
+      "calls": [
+        [
+          "Canaccord Genuity",
+          29,
+          "2026-09-11"
+        ],
+        [
+          "Truist Financial",
+          30,
+          "2026-09-11"
+        ],
+        [
+          "Wells Fargo",
+          22,
+          "2026-09-11"
+        ],
+        [
+          "Cantor Fitzgerald",
+          28,
+          "2026-09-10"
+        ],
+        [
+          "Needham",
+          30,
+          "2026-09-10"
+        ],
+        [
+          "Morgan Stanley",
+          31,
+          "2026-09-10"
+        ],
+        [
+          "Barclays",
+          22,
+          "2026-09-10"
+        ]
+      ],
+      "er": {
+        "eps": 0.03,
+        "q": "Sep 2026",
+        "nEst": 5,
+        "hist": [
+          [
+            "2026-08-05",
+            -75,
+            -12.4
+          ],
+          [
+            "2026-05-05",
+            60,
+            -29.6
+          ],
+          [
+            "2026-02-10",
+            75,
+            3.3
+          ],
+          [
+            "2025-11-05",
+            null,
+            10.8
+          ]
+        ]
+      }
+    },
+    "MU": {
+      "name": "Micron Technology",
+      "sector": "Technology",
+      "price": 1087.8,
+      "cons": 1555,
+      "low": 361,
+      "high": 3000,
+      "n": 49,
+      "src": "S&P Global via StockAnalysis; Zacks via Nasdaq; named calls via StockAnalysis",
+      "tgt": "2026-10-07",
+      "prev": {
+        "price": 1045.56,
+        "cons": 1536,
+        "low": 361,
+        "high": 2200,
+        "zacks": 1595.58
+      },
+      "next": {
+        "date": "2026-12-16",
+        "what": "FQ1 FY27 results (estimate; Micron typically reports mid-to-late Dec)",
+        "conf": false
+      },
+      "beta": 3.28,
+      "zacks": {
+        "cons": 1630.19,
+        "low": 1200,
+        "high": 3000
+      },
+      "calls": [
+        [
+          "D.A. Davidson",
+          3000,
+          "2026-10-07"
+        ],
+        [
+          "J.P. Morgan",
+          1540,
+          "2026-10-06"
+        ],
+        [
+          "Phillip Securities",
+          1950,
+          "2026-10-06"
+        ],
+        [
+          "Barclays",
+          2000,
+          "2026-10-02"
+        ],
+        [
+          "Deutsche Bank",
+          1550,
+          "2026-10-01"
+        ],
+        [
+          "Cantor Fitzgerald",
+          2000,
+          "2026-10-01"
+        ],
+        [
+          "Bank of America Securities",
+          1550,
+          "2026-10-01"
+        ],
+        [
+          "KeyBanc",
+          1750,
+          "2026-10-01"
+        ],
+        [
+          "Melius Research",
+          2200,
+          "2026-10-01"
+        ],
+        [
+          "UBS",
+          1625,
+          "2026-10-01"
+        ],
+        [
+          "Robert W. Baird",
+          1520,
+          "2026-10-01"
+        ],
+        [
+          "Citi",
+          1300,
+          "2026-10-01"
+        ]
+      ],
+      "er": {
+        "eps": 35.17,
+        "q": "Nov 2026",
+        "nEst": 10,
+        "hist": [
+          [
+            "2026-09-30",
+            5.67,
+            3
+          ],
+          [
+            "2026-06-24",
+            18.64,
+            15.4
+          ],
+          [
+            "2026-03-18",
+            39.81,
+            -3.8
+          ],
+          [
+            "2025-12-17",
+            25.61,
+            6.9
+          ]
+        ]
+      }
+    },
+    "NVDA": {
+      "name": "NVIDIA",
+      "sector": "Technology",
+      "price": 237.37,
+      "cons": 328.72,
+      "low": 180,
+      "high": 515,
+      "n": 61,
+      "src": "S&P Global via StockAnalysis; Zacks via Nasdaq; named calls via StockAnalysis",
+      "tgt": "2026-10-07",
+      "prev": {
+        "price": 239.24,
+        "cons": 327.7,
+        "low": 180,
+        "high": 515,
+        "zacks": 325.03
+      },
+      "next": {
+        "date": "2026-11-18",
+        "what": "Q3 FY27 results, after close (estimate; not yet announced)",
+        "conf": false
+      },
+      "beta": 1.87,
+      "zacks": {
+        "cons": 324.2,
+        "low": 275,
+        "high": 465
+      },
+      "calls": [
+        [
+          "Yorkville Ives & Co",
+          300,
+          "2026-10-07"
+        ],
+        [
+          "Citi",
+          315,
+          "2026-10-06"
+        ],
+        [
+          "Exane BNP Paribas",
+          345,
+          "2026-10-05"
+        ],
+        [
+          "Morgan Stanley",
+          300,
+          "2026-10-02"
+        ],
+        [
+          "Cantor Fitzgerald",
+          350,
+          "2026-10-01"
+        ],
+        [
+          "Barclays",
+          275,
+          "2026-10-01"
+        ],
+        [
+          "Rosenblatt Securities",
+          390,
+          "2026-09-28"
+        ],
+        [
+          "Rothschild & Co Redburn",
+          325,
+          "2026-09-21"
+        ],
+        [
+          "Bernstein",
+          400,
+          "2026-09-21"
+        ]
+      ],
+      "er": {
+        "eps": 2.47,
+        "q": "Oct 2026",
+        "nEst": 13,
+        "hist": [
+          [
+            "2026-08-26",
+            6.22,
+            7
+          ],
+          [
+            "2026-05-20",
+            10,
+            -0.5
+          ],
+          [
+            "2026-02-25",
+            8.28,
+            -4.1
+          ],
+          [
+            "2025-11-19",
+            5.08,
+            -0.4
+          ]
+        ]
+      }
+    },
+    "PLAB": {
+      "name": "Photronics",
+      "sector": "Technology",
+      "price": 30.1,
+      "cons": 41.33,
+      "low": 39,
+      "high": 44,
+      "n": 3,
+      "src": "StockAnalysis (3 analysts, $41.33). Zacks via Nasdaq $44.00 on 1 analyst; MarketBeat showed $49.33 on 6 analysts on 22 Sep.",
+      "tgt": "2026-08-27",
+      "disputed": true,
+      "prev": {
+        "price": 30.82,
+        "cons": 41.33,
+        "low": 39,
+        "high": 44,
+        "zacks": 44
+      },
+      "next": {
+        "date": "2026-12-16",
+        "what": "FQ4 results, before open (one tracker shows 9 Dec instead)",
+        "conf": true
+      },
+      "beta": 2.98,
+      "zacks": {
+        "cons": 44,
+        "low": 44,
+        "high": 44
+      },
+      "calls": [],
+      "er": {
+        "eps": 0.44,
+        "q": "Oct 2026",
+        "nEst": 3,
+        "hist": [
+          [
+            "2026-08-26",
+            25,
+            3.2
+          ],
+          [
+            "2026-05-28",
+            -20.75,
+            -39.5
+          ],
+          [
+            "2026-02-25",
+            12.96,
+            1.8
+          ],
+          [
+            "2025-12-10",
+            27.66,
+            54.4
+          ]
+        ]
+      }
+    },
+    "RKLB": {
+      "name": "Rocket Lab",
+      "sector": "Industrials",
+      "price": 71.89,
+      "cons": 109.15,
+      "low": 64,
+      "high": 150,
+      "n": 21,
+      "src": "S&P Global via StockAnalysis; Zacks via Nasdaq; named calls via StockAnalysis",
+      "tgt": "2026-10-01",
+      "prev": {
+        "price": 75.06,
+        "cons": 109.15,
+        "low": 64,
+        "high": 150,
+        "zacks": 110.07
+      },
+      "next": {
+        "date": "2026-11-09",
+        "what": "Q3 results (sources conflict: one tracker lists 16 Nov)",
+        "conf": false
+      },
+      "beta": 3.69,
+      "zacks": {
+        "cons": 110.07,
+        "low": 80,
+        "high": 135
+      },
+      "calls": [
+        [
+          "Citi",
+          105,
+          "2026-10-01"
+        ],
+        [
+          "Raymond James",
+          80,
+          "2026-09-11"
+        ],
+        [
+          "Berenberg Bank",
+          83,
+          "2026-09-02"
+        ],
+        [
+          "Bank of America Securities",
+          110,
+          "2026-08-31"
+        ],
+        [
+          "Cantor Fitzgerald",
+          122,
+          "2026-08-17"
+        ],
+        [
+          "Needham",
+          120,
+          "2026-08-11"
+        ]
+      ],
+      "er": {
+        "eps": -0.05,
+        "q": "Sep 2026",
+        "nEst": 2,
+        "hist": [
+          [
+            "2026-08-10",
+            14.29,
+            -3.4
+          ],
+          [
+            "2026-05-07",
+            14.29,
+            24.6
+          ],
+          [
+            "2026-02-26",
+            -25,
+            -1.6
+          ],
+          [
+            "2025-11-10",
+            88.89,
+            -0.8
+          ]
+        ]
+      }
+    },
+    "NOW": {
+      "name": "ServiceNow",
+      "sector": "Technology",
+      "price": 137.85,
+      "cons": 146.73,
+      "low": 72,
+      "high": 248,
+      "n": 49,
+      "src": "S&P Global via StockAnalysis; Zacks via Nasdaq; named calls via StockAnalysis",
+      "tgt": "2026-10-07",
+      "prev": {
+        "price": 138.01,
+        "cons": 146.73,
+        "low": 72,
+        "high": 248,
+        "zacks": 146.37
+      },
+      "next": {
+        "date": "2026-10-28",
+        "what": "Q3 results, after close",
+        "conf": false
+      },
+      "beta": 0.65,
+      "zacks": {
+        "cons": 147.66,
+        "low": 72,
+        "high": 248
+      },
+      "calls": [
+        [
+          "Argus Research",
+          170,
+          "2026-10-07"
+        ],
+        [
+          "Yorkville Ives & Co",
+          160,
+          "2026-10-07"
+        ],
+        [
+          "Stifel Nicolaus",
+          160,
+          "2026-10-06"
+        ],
+        [
+          "UBS",
+          150,
+          "2026-10-06"
+        ],
+        [
+          "Jefferies",
+          140,
+          "2026-10-02"
+        ],
+        [
+          "Cantor Fitzgerald",
+          174,
+          "2026-09-21"
+        ],
+        [
+          "Needham",
+          155,
+          "2026-09-11"
+        ],
+        [
+          "Bernstein",
+          248,
+          "2026-09-09"
+        ],
+        [
+          "BTIG",
+          170,
+          "2026-09-08"
+        ],
+        [
+          "Bank of America Securities",
+          150,
+          "2026-08-19"
+        ],
+        [
+          "TD Cowen",
+          140,
+          "2026-08-17"
+        ]
+      ],
+      "er": {
+        "eps": 0.57,
+        "q": "Sep 2026",
+        "nEst": 12,
+        "hist": [
+          [
+            "2026-07-22",
+            -22.5,
+            -9.9
+          ],
+          [
+            "2026-04-22",
+            -10.91,
+            -15.3
+          ],
+          [
+            "2026-01-28",
+            8.33,
+            -11.4
+          ],
+          [
+            "2025-10-29",
+            25.53,
+            -0.3
+          ]
+        ]
+      }
+    },
+    "TMDX": {
+      "name": "TransMedics",
+      "sector": "Health Care",
+      "price": 81.16,
+      "cons": 99.82,
+      "low": 65,
+      "high": 125,
+      "n": 13,
+      "src": "StockAnalysis (cross-vendor dispersion is wide and appears to be widening: other trackers cite $123.88–$131.30)",
+      "tgt": "2026-10-06",
+      "prev": {
+        "price": 80.28,
+        "cons": 97.3,
+        "low": 65,
+        "high": 125,
+        "zacks": 94.75
+      },
+      "next": {
+        "date": "2026-11-04",
+        "what": "Q3 results, after close",
+        "conf": false
+      },
+      "beta": 1.12,
+      "zacks": {
+        "cons": 97.56,
+        "low": 65,
+        "high": 122
+      },
+      "calls": [
+        [
+          "Barclays",
+          120,
+          "2026-10-06"
+        ],
+        [
+          "Piper Sandler",
+          100,
+          "2026-10-05"
+        ],
+        [
+          "TD Cowen",
+          120,
+          "2026-10-02"
+        ],
+        [
+          "Needham",
+          106,
+          "2026-09-22"
+        ],
+        [
+          "Stifel Nicolaus",
+          65,
+          "2026-09-11"
+        ],
+        [
+          "Canaccord Genuity",
+          95,
+          "2026-09-11"
+        ],
+        [
+          "J.P. Morgan",
+          73,
+          "2026-08-07"
+        ]
+      ],
+      "er": {
+        "eps": 0.27,
+        "q": "Sep 2026",
+        "nEst": 5,
+        "hist": [
+          [
+            "2026-08-04",
+            -12,
+            -6.2
+          ],
+          [
+            "2026-05-05",
+            -51.61,
+            -24.9
+          ],
+          [
+            "2026-02-24",
+            39.02,
+            -2.1
+          ],
+          [
+            "2025-10-29",
+            78.38,
+            4.7
+          ]
+        ]
+      }
+    },
+    "UBER": {
+      "name": "Uber",
+      "sector": "Industrials",
+      "price": 68.47,
+      "cons": 100.86,
+      "low": 70,
+      "high": 150,
+      "n": 50,
+      "src": "S&P Global via StockAnalysis; Zacks via Nasdaq; named calls via StockAnalysis",
+      "tgt": "2026-10-07",
+      "prev": {
+        "price": 69.08,
+        "cons": 100.77,
+        "low": 70,
+        "high": 150,
+        "zacks": 102.88
+      },
+      "next": {
+        "date": "2026-11-04",
+        "what": "Q3 results (company announced the 4 Nov call)",
+        "conf": true
+      },
+      "beta": 0.87,
+      "zacks": {
+        "cons": 102.88,
+        "low": 72,
+        "high": 125
+      },
+      "calls": [
+        [
+          "Bank of America Securities",
+          101,
+          "2026-10-07"
+        ],
+        [
+          "BTIG",
+          100,
+          "2026-10-07"
+        ],
+        [
+          "Scotiabank",
+          100,
+          "2026-10-07"
+        ],
+        [
+          "Rosenblatt Securities",
+          100,
+          "2026-10-07"
+        ],
+        [
+          "Wells Fargo",
+          92,
+          "2026-10-05"
+        ],
+        [
+          "Bernstein",
+          95,
+          "2026-09-11"
+        ],
+        [
+          "Jefferies",
+          110,
+          "2026-09-03"
+        ],
+        [
+          "Wedbush",
+          91,
+          "2026-09-03"
+        ]
+      ],
+      "er": {
+        "eps": 1.03,
+        "q": "Sep 2026",
+        "nEst": 8,
+        "hist": [
+          [
+            "2026-08-05",
+            40.96,
+            -2.1
+          ],
+          [
+            "2026-05-06",
+            2.86,
+            5.2
+          ],
+          [
+            "2026-02-04",
+            -10.13,
+            -3.5
+          ],
+          [
+            "2025-11-04",
+            364.18,
+            -7
+          ]
+        ]
+      }
+    },
+    "ADPT": {
+      "name": "Adaptive Biotechnologies",
+      "sector": "Health Care",
+      "price": 26.29,
+      "cons": 28.31,
+      "low": 21,
+      "high": 35,
+      "n": 9,
+      "src": "S&P Global via StockAnalysis; Zacks via Nasdaq; named calls via StockAnalysis",
+      "tgt": "2026-10-01",
+      "prev": {
+        "price": 26.9,
+        "cons": 28.31,
+        "low": 21,
+        "high": 35,
+        "zacks": 29.36
+      },
+      "next": {
+        "date": "2026-11-04",
+        "what": "Q3 results",
+        "conf": false
+      },
+      "beta": 1.66,
+      "zacks": {
+        "cons": 29.36,
+        "low": 22,
+        "high": 35
+      },
+      "calls": [
+        [
+          "Guggenheim",
+          32,
+          "2026-10-01"
+        ],
+        [
+          "Goldman Sachs",
+          35,
+          "2026-09-29"
+        ],
+        [
+          "BTIG",
+          34,
+          "2026-09-22"
+        ],
+        [
+          "Piper Sandler",
+          28,
+          "2026-08-24"
+        ]
+      ],
+      "er": {
+        "eps": -0.1,
+        "q": "Sep 2026",
+        "nEst": 4,
+        "hist": [
+          [
+            "2026-07-29",
+            23.08,
+            7.4
+          ],
+          [
+            "2026-05-05",
+            18.75,
+            -0.5
+          ],
+          [
+            "2026-02-05",
+            52.63,
+            -8.8
+          ],
+          [
+            "2025-11-05",
+            6.25,
+            -8
+          ]
+        ]
+      }
+    },
+    "AEM": {
+      "name": "Agnico Eagle",
+      "sector": "Materials",
+      "price": 180.36,
+      "cons": 217.39,
+      "low": 87,
+      "high": 300,
+      "n": 22,
+      "src": "S&P Global via StockAnalysis; Zacks via Nasdaq; named calls via StockAnalysis",
+      "tgt": "2026-10-08",
+      "prev": {
+        "price": 186.07,
+        "cons": 215.96,
+        "low": 87,
+        "high": 300,
+        "zacks": 227.77
+      },
+      "next": {
+        "date": "2026-10-28",
+        "what": "Q3 results, after close (call 29 Oct)",
+        "conf": true
+      },
+      "beta": 1.52,
+      "zacks": {
+        "cons": 223.13,
+        "low": 179,
+        "high": 285
+      },
+      "calls": [
+        [
+          "UBS",
+          190,
+          "2026-10-08"
+        ],
+        [
+          "RBC Capital",
+          225,
+          "2026-09-28"
+        ],
+        [
+          "Bank of America Securities",
+          240,
+          "2026-08-28"
+        ],
+        [
+          "Scotiabank",
+          260,
+          "2026-08-20"
+        ]
+      ],
+      "er": {
+        "eps": 2.45,
+        "q": "Sep 2026",
+        "nEst": 6,
+        "hist": [
+          [
+            "2026-07-29",
+            5.54,
+            4.9
+          ],
+          [
+            "2026-04-30",
+            6.58,
+            0
+          ],
+          [
+            "2026-02-12",
+            5.08,
+            -0.3
+          ],
+          [
+            "2025-10-29",
+            22.73,
+            3.7
+          ]
+        ]
+      }
+    },
+    "FNV": {
+      "name": "Franco-Nevada",
+      "sector": "Materials",
+      "price": 237.88,
+      "cons": 286.97,
+      "low": 256,
+      "high": 330.73,
+      "n": 15,
+      "src": "S&P Global via StockAnalysis; Zacks via Nasdaq; named calls via StockAnalysis",
+      "tgt": "2026-09-15",
+      "prev": {
+        "price": 243.96,
+        "cons": 286.97,
+        "low": 256,
+        "high": 330.73,
+        "zacks": 287.84
+      },
+      "next": {
+        "date": "2026-11-02",
+        "what": "Q3 results, after close (estimate)",
+        "conf": false
+      },
+      "beta": 1.11,
+      "zacks": {
+        "cons": 287.88,
+        "low": 238,
+        "high": 336.72
+      },
+      "calls": [
+        [
+          "Bank of America Securities",
+          238,
+          "2026-10-01"
+        ],
+        [
+          "Stifel Nicolaus",
+          275.08,
+          "2026-09-15"
+        ],
+        [
+          "RBC Capital",
+          300,
+          "2026-09-15"
+        ],
+        [
+          "Scotiabank",
+          274,
+          "2026-08-13"
+        ],
+        [
+          "H.C. Wainwright",
+          305,
+          "2026-08-13"
+        ],
+        [
+          "CIBC",
+          338.56,
+          "2026-08-12"
+        ]
+      ],
+      "er": {
+        "eps": 1.89,
+        "q": "Sep 2026",
+        "nEst": 3,
+        "hist": [
+          [
+            "2026-08-11",
+            -7.18,
+            -2.1
+          ],
+          [
+            "2026-05-12",
+            13.88,
+            1.3
+          ],
+          [
+            "2026-03-10",
+            10.12,
+            1
+          ],
+          [
+            "2025-11-03",
+            4.38,
+            -1
+          ]
+        ]
+      }
+    },
+    "HUBS": {
+      "name": "HubSpot",
+      "sector": "Technology",
+      "price": 220.21,
+      "cons": 249.71,
+      "low": 190,
+      "high": 320,
+      "n": 35,
+      "src": "S&P Global via StockAnalysis; Zacks via Nasdaq; named calls via StockAnalysis",
+      "tgt": "2026-10-07",
+      "prev": {
+        "price": 216.95,
+        "cons": 249.71,
+        "low": 190,
+        "high": 320,
+        "zacks": 251.48
+      },
+      "next": {
+        "date": "2026-11-04",
+        "what": "Q3 results, after close (an earlier tracker showed 11 Nov)",
+        "conf": false
+      },
+      "beta": 0.58,
+      "zacks": {
+        "cons": 250.79,
+        "low": 200,
+        "high": 300
+      },
+      "calls": [
+        [
+          "Canaccord Genuity",
+          300,
+          "2026-10-07"
+        ],
+        [
+          "Barclays",
+          240,
+          "2026-10-07"
+        ],
+        [
+          "Cantor Fitzgerald",
+          200,
+          "2026-10-07"
+        ],
+        [
+          "Jefferies",
+          250,
+          "2026-10-06"
+        ],
+        [
+          "Needham",
+          300,
+          "2026-10-06"
+        ],
+        [
+          "FBN Securities",
+          230,
+          "2026-09-23"
+        ],
+        [
+          "Stephens",
+          255,
+          "2026-09-21"
+        ],
+        [
+          "BMO Capital",
+          250,
+          "2026-09-21"
+        ],
+        [
+          "Truist Financial",
+          275,
+          "2026-09-21"
+        ],
+        [
+          "Wells Fargo",
+          200,
+          "2026-09-18"
+        ],
+        [
+          "RBC Capital",
+          300,
+          "2026-09-18"
+        ]
+      ],
+      "er": {
+        "eps": 0.93,
+        "q": "Sep 2026",
+        "nEst": 11,
+        "hist": [
+          [
+            "2026-08-05",
+            57.75,
+            -18.7
+          ],
+          [
+            "2026-05-07",
+            21.74,
+            -16.1
+          ],
+          [
+            "2026-02-11",
+            29.67,
+            -1.3
+          ],
+          [
+            "2025-11-05",
+            -91.49,
+            -16.3
+          ]
+        ]
+      }
+    },
+    "VRA": {
+      "name": "Vera Bradley",
+      "sector": "Consumer Discretionary",
+      "price": 4.99,
+      "cons": 5,
+      "low": 3.304,
+      "high": 5.75,
+      "n": 0,
+      "modeled": true,
+      "src": "No live numeric Street target remains: TipRanks shows zero human analysts with ratings in the past 3 months, and MarketBeat's 2 listed raters (Zacks, Weiss) carry no active price target. Figures shown are the last published target (8 Sep) carried forward, not a current consensus. Re-checked 1 Oct (target field still empty on StockAnalysis); previously verified 30 Sep (StockAnalysis shows no target): still zero live analyst targets, no numeric target found.",
+      "tgt": "2026-09-08",
+      "disputed": true,
+      "prev": {
+        "price": 5.08,
+        "cons": 5,
+        "low": 3.304,
+        "high": 5.75
+      },
+      "next": {
+        "date": "2026-12-09",
+        "what": "Q3 results, before open",
+        "conf": true
+      },
+      "beta": 0.78,
+      "calls": [],
+      "er": {
+        "eps": -0.2,
+        "q": "Oct 2026",
+        "nEst": 1,
+        "hist": [
+          [
+            "2026-09-15",
+            237.5,
+            32.2
+          ],
+          [
+            "2026-06-11",
+            72.73,
+            19.2
+          ],
+          [
+            "2026-03-12",
+            800,
+            39.8
+          ],
+          [
+            "2025-12-11",
+            -172.73,
+            -9.3
+          ]
+        ]
+      }
+    },
+    "WPM": {
+      "name": "Wheaton Precious Metals",
+      "sector": "Materials",
+      "price": 133.66,
+      "cons": 178.51,
+      "low": 154,
+      "high": 224.11,
+      "n": 16,
+      "src": "S&P Global via StockAnalysis; Zacks via Nasdaq; named calls via StockAnalysis",
+      "tgt": "2026-10-08",
+      "prev": {
+        "price": 137.66,
+        "cons": 178.11,
+        "low": 153,
+        "high": 224.11,
+        "zacks": 171.5
+      },
+      "next": {
+        "date": "2026-11-05",
+        "what": "Q3 results, after close",
+        "conf": true
+      },
+      "beta": 1.68,
+      "zacks": {
+        "cons": 169.86,
+        "low": 154.66,
+        "high": 188
+      },
+      "calls": [
+        [
+          "UBS",
+          160,
+          "2026-10-08"
+        ],
+        [
+          "Stifel Nicolaus",
+          176.33,
+          "2026-09-17"
+        ],
+        [
+          "Jefferies",
+          188,
+          "2026-09-17"
+        ],
+        [
+          "Scotiabank",
+          175,
+          "2026-09-17"
+        ],
+        [
+          "Bank of America Securities",
+          171,
+          "2026-09-17"
+        ],
+        [
+          "Berenberg Bank",
+          155.02,
+          "2026-09-17"
+        ],
+        [
+          "RBC Capital",
+          165,
+          "2026-09-15"
+        ]
+      ],
+      "er": {
+        "eps": 1.11,
+        "q": "Sep 2026",
+        "nEst": 5,
+        "hist": [
+          [
+            "2026-08-06",
+            3.48,
+            9.3
+          ],
+          [
+            "2026-05-07",
+            11.3,
+            3.2
+          ],
+          [
+            "2026-03-12",
+            31.18,
+            -5.9
+          ],
+          [
+            "2025-11-06",
+            5.08,
+            2.7
+          ]
+        ]
+      }
+    }
+  }
+}
