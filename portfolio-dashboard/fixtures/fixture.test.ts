@@ -22,7 +22,7 @@ describe("market-2026-10-07 fixture", () => {
   });
 
   it("preserves NVDA and ADBE reference values", () => {
-    const t = fixture.tickers as Record<string, any>;
+    const t = fixture.tickers;
     expect(t.NVDA.price).toBe(237.37);
     expect(t.NVDA.n).toBe(61);
     expect(t.NVDA.cons).toBe(328.72);
