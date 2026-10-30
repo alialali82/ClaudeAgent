@@ -6,6 +6,10 @@ import type { Holding } from "../types";
 
 const NOISE_RE =
   /^(?:GRAND\s+TOTAL|SUB\s*TOTAL|TOTALS?|CASH|NET\s+LIQUIDATION(?:\s+VALUE)?|BALANCE|PORTFOLIO)(?![A-Z0-9])/;
+const MAX_TICKER_INPUT = 64;
+const EXCHANGES = new Set([
+  "NASDAQ", "NYSE", "AMEX", "ARCA", "BATS", "CBOE", "OTC", "OTCMKTS", "NYSEARCA", "NYSEAMERICAN", "NYSEMKT", "US",
+]);
 const TICKER_RE = /^[A-Z][A-Z0-9]{0,5}(-[A-Z])?$/;
 // Single letters that are far more likely to be an exchange suffix than a
 // share class: .L London, .T Tokyo, .V TSX-V, .F Frankfurt, .N NYSE, .O Nasdaq.
@@ -23,9 +27,17 @@ export function normalizeTicker(raw: string): string | null {
   if (typeof raw !== "string") return null;
   let s = raw.trim().toUpperCase();
   if (!s || NOISE_RE.test(s)) return null;
+  if (s.length > MAX_TICKER_INPUT) return null;
   s = s.replace(/^\$/, "").trim();
-  s = s.replace(/(?<=.)[.:\s]US$/, ""); // NVDA.US, NVDA:US, NVDA US
-  s = s.replace(/^[A-Z]+:(?=.)/, ""); // NASDAQ:NVDA
+  if (s.includes(":")) {
+    // Only known exchanges may be dropped; "VOD:LN" or "FOO:BAR" stay unreadable.
+    const parts = s.split(":").map((p) => p.trim());
+    if (parts.length !== 2 || !parts[0] || !parts[1]) return null;
+    if (EXCHANGES.has(parts[0])) s = parts[1];
+    else if (EXCHANGES.has(parts[1])) s = parts[0];
+    else return null;
+  }
+  s = s.replace(/(?<=.)[.\s]US$/, ""); // NVDA.US, NVDA US
   const cls = /^([A-Z0-9]+)([.\s/-])([A-Z])$/.exec(s);
   if (cls) {
     if (cls[2] === "." && EXCHANGE_LETTERS.has(cls[3])) return null;
@@ -44,7 +56,7 @@ const THOUSANDS_DOT = /^[1-9]\d{0,2}(\.\d{3})+$/;
 /** Locale-tolerant number parsing. Returns null (never NaN/Infinity) when unreadable. */
 export function parseNumber(raw: unknown): number | null {
   if (typeof raw === "number") return Number.isFinite(raw) ? raw : null;
-  if (typeof raw !== "string") return null;
+  if (typeof raw !== "string" || raw.length > 256) return null;
   let s = raw
     .replace(/USD|EUR|GBP/gi, "")
     .replace(/[$€£%+]/g, "")
@@ -62,7 +74,8 @@ export function parseNumber(raw: unknown): number | null {
     negative = !negative;
     s = s.slice(0, -1);
   }
-  if (!/^[0-9.,]*[0-9][0-9.,]*$/.test(s)) return null;
+  // Two linear checks (a single regex with adjacent overlapping quantifiers backtracks quadratically).
+  if (s.length > 64 || !/^[0-9.,]+$/.test(s) || !/[0-9]/.test(s)) return null;
 
   const lastDot = s.lastIndexOf(".");
   const lastComma = s.lastIndexOf(",");
@@ -102,6 +115,7 @@ export type ColumnMap = {
 const norm = (h: unknown): string =>
   (typeof h === "string" || typeof h === "number" ? String(h) : "")
     .toLowerCase()
+    .replace(/\//g, " per ") // "Cost/Share" -> "cost per share"
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
 
@@ -118,11 +132,11 @@ const matchers = {
   account: (h: string) => /\b(account|broker|portfolio|custodian)\b/.test(h) && !COSTISH.test(h),
   date: (h: string) => /\b(date|acquired|opened)\b/.test(h),
   cost: (h: string) =>
-    /\b(cost|basis|invested|paid|avg|average)\b|book value|unit price|purchase price/.test(h) && !NOT_COST.test(h),
+    /\b(cost|basis|invested|paid|avg|average)\b|book value|unit price|purchase price|price per (share|unit)/.test(h) && !NOT_COST.test(h),
 };
 
 function costKindOf(h: string): "total" | "perShare" {
-  if (/\b(avg|average|paid)\b|per share|per unit|unit price|unit cost|purchase price/.test(h)) return "perShare";
+  if (/\b(avg|average|paid)\b|per share|per unit|\b(cost|price) (share|unit)\b|unit price|unit cost|purchase price/.test(h)) return "perShare";
   return "total"; // total / basis / book value / invested / bare "cost"
 }
 
@@ -213,6 +227,7 @@ function parseDate(raw: unknown): string | undefined {
 /* Sheet -> holdings                                                   */
 /* ------------------------------------------------------------------ */
 
+const shorten = (t: string) => (t.length > 40 ? `${t.slice(0, 40)}…` : t);
 const isBlank = (v: unknown) => v === undefined || v === null || (typeof v === "string" && v.trim() === "");
 
 export function parseSheet(
@@ -236,7 +251,7 @@ export function parseSheet(
     if (isNoiseTicker(tickerText)) continue;
     const ticker = normalizeTicker(tickerText);
     if (!ticker) {
-      warnings.push(`Row ${n}: could not read a ticker from "${tickerText || String(rawTicker)}"`);
+      warnings.push(`Row ${n}: could not read a ticker from "${shorten(tickerText || String(rawTicker))}"`);
       continue;
     }
     const shares = parseNumber(row[map.shares]);

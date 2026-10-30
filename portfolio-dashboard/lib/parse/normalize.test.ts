@@ -340,3 +340,53 @@ describe("detectColumns", () => {
     expect(detectColumns([["a"]])).toBeNull();
   });
 });
+
+describe("review fixes", () => {
+  it("parseNumber is linear-time on hostile input and caps length", () => {
+    const t0 = performance.now();
+    expect(parseNumber("1".repeat(100000) + "x")).toBeNull();
+    expect(performance.now() - t0).toBeLessThan(200);
+    expect(parseNumber("1".repeat(65))).toBeNull();
+    expect(parseNumber("1".repeat(64))).not.toBeNull();
+    expect(parseNumber("1234567.89")).toBe(1234567.89);
+  });
+
+  it.each(["Cost/Share", "Cost / Share", "Cost basis/share", "Cost per share", "Avg. Price", "Average cost", "Price/Unit"])(
+    "header %j is perShare",
+    (h) => {
+      expect(guessColumns(["Ticker", "Shares", h])).toMatchObject({ cost: 2, costKind: "perShare" });
+    },
+  );
+
+  it.each(["Cost", "Total cost", "Cost basis", "Book value", "Invested"])("header %j is total", (h) => {
+    expect(guessColumns(["Ticker", "Shares", h])).toMatchObject({ cost: 2, costKind: "total" });
+  });
+
+  it.each([
+    ["AAPL:NASDAQ", "AAPL"],
+    ["NYSE:IBM", "IBM"],
+    ["NASDAQ:NVDA", "NVDA"],
+    ["NASDAQ:BRK.B", "BRK-B"],
+    ["VOD:LN", null],
+    ["FOO:BAR", null],
+    ["A:B:C", null],
+    ["NVDA:US", "NVDA"],
+    ["nvda us", "NVDA"],
+    ["NVDA.US", "NVDA"],
+  ])("exchange handling %j -> %j", (raw, expected) => {
+    expect(normalizeTicker(raw)).toBe(expected);
+  });
+
+  it("normalizeTicker is idempotent", () => {
+    for (const x of ["BRK.B", "brk b", "$NVDA", "NVDA.US", "NASDAQ:NVDA", "AAPL:NASDAQ", "BRK/B", "VOD:LN", "x".repeat(500)]) {
+      const once = normalizeTicker(x);
+      expect(normalizeTicker(once as string)).toBe(once);
+    }
+  });
+
+  it("truncates long ticker text in warnings", () => {
+    const long = "Some very long free text that is not a ticker at all, really";
+    const { warnings } = parseSheet([["T", "S"], [long, 1]], { headerRow: 0, ticker: 0, shares: 1 });
+    expect(warnings).toEqual([`Row 2: could not read a ticker from "${long.slice(0, 40)}…"`]);
+  });
+});
