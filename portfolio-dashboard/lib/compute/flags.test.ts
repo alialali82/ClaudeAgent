@@ -243,4 +243,14 @@ describe("buildChanges", () => {
     const ch = buildChanges(p, m, { AAA: view() }, {}, noCal);
     expect(ch.map((c) => c.key)).toEqual(["Targets", "Cost", "Next 14 days"]);
   });
+
+  it("a blank results date yields no Results flag and no NaN text", () => {
+    const m = { AAA: mk("AAA", { next: { date: "", what: "results", conf: true } }) };
+    const c = buildCalendar(p, m, TODAY);
+    const fl = buildFlags(p, { AAA: view() }, m, c, 1000);
+    expect(find(fl, "Results")).toBeUndefined();
+    const ch = buildChanges(p, m, { AAA: view() }, {}, c);
+    expect(ch.at(-1)).toEqual({ key: "Next 14 days", text: "No results scheduled." });
+    expect(JSON.stringify([fl, ch])).not.toMatch(/NaN|undefined/);
+  });
 });

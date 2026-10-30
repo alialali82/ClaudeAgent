@@ -27,7 +27,7 @@ export function buildFlags(
   const share = (x: number) => (total > 0 ? ((x / total) * 100).toFixed(1) : "0.0");
 
   for (const e of calendar.next14) {
-    if (e.kind !== "results") continue;
+    if (e.kind !== "results" || !Number.isFinite(e.days)) continue;
     const p = byTicker.get(e.ticker);
     if (!p || !market[e.ticker]) continue;
     const when = e.days === 0 ? "today" : e.days === 1 ? "tomorrow" : `in ${e.days} days`;
@@ -162,7 +162,7 @@ export function buildChanges(
     }
   }
 
-  const soon = calendar.next14.filter((e) => e.kind === "results");
+  const soon = calendar.next14.filter((e) => e.kind === "results" && Number.isFinite(e.days));
   ch.push({
     key: "Next 14 days",
     text: soon.length

@@ -33,6 +33,16 @@ describe("formatters", () => {
     expect(fd("2026-10-07")).toBe("7 Oct");
     expect(fd("2026-01-31")).toBe("31 Jan");
   });
+  it("fd returns a dash for invalid dates", () => {
+    expect(fd("")).toBe("—");
+    expect(fd("garbage")).toBe("—");
+    expect(fd("2026-13-45")).toBe("—");
+    expect(fd("2026-02-30")).toBe("—");
+  });
+  it("daysBetween is NaN only for invalid input", () => {
+    expect(daysBetween("2026-10-07", "")).toBeNaN();
+    expect(daysBetween("2026-10-07", "2026-13-45")).toBeNaN();
+  });
   it("daysBetween counts whole UTC days", () => {
     expect(daysBetween("2026-10-07", "2026-10-07")).toBe(0);
     expect(daysBetween("2026-10-07", "2026-10-21")).toBe(14);

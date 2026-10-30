@@ -25,7 +25,7 @@ export function buildCalendar(
     if (!m) continue;
     const add = (e: { date: string; what: string; conf: boolean }, kind: CalEvent["kind"]) => {
       const days = daysBetween(today, e.date);
-      if (days < 0) return;
+      if (!Number.isFinite(days) || days < 0) return;
       events.push({ ticker: p.ticker, date: e.date, what: e.what, conf: e.conf, kind, days });
     };
     if (m.next) add(m.next, "results");

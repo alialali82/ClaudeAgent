@@ -81,4 +81,19 @@ describe("buildCalendar", () => {
     const c = buildCalendar([pos("AAA")], market, TODAY);
     expect(c.events.map((e) => e.ticker)).toEqual(["AAA"]);
   });
+
+  it("drops events with invalid dates but keeps valid ones", () => {
+    const market = {
+      AAA: mk("AAA", {
+        next: { date: "", what: "results", conf: true },
+        events: [
+          { date: "2026-13-45", what: "Bad", conf: false },
+          { date: "2026-10-09", what: "Good", conf: true },
+        ],
+      }),
+    };
+    const c = buildCalendar([pos("AAA")], market, TODAY);
+    expect(c.events.map((e) => e.date)).toEqual(["2026-10-09"]);
+    expect(c.next14).toEqual([]);
+  });
 });

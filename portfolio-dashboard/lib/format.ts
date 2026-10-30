@@ -29,13 +29,21 @@ export function pct(n: number, d = 1): string {
   return (n >= 0 ? "+" : MINUS) + Math.abs(n * 100).toFixed(d) + "%";
 }
 
+function parseIso(iso: string): number {
+  if (typeof iso !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return NaN;
+  const t = Date.parse(`${iso}T00:00:00Z`);
+  if (!Number.isFinite(t) || new Date(t).toISOString().slice(0, 10) !== iso) return NaN;
+  return t;
+}
+
 export function fd(isoDate: string): string {
-  const x = new Date(`${isoDate}T00:00:00Z`);
+  const t = parseIso(isoDate);
+  if (Number.isNaN(t)) return DASH;
+  const x = new Date(t);
   return `${x.getUTCDate()} ${MON[x.getUTCMonth()]}`;
 }
 
+/** Whole UTC days from -> to; NaN only when either date is invalid. */
 export function daysBetween(fromIso: string, toIso: string): number {
-  return Math.round(
-    (Date.parse(`${toIso}T00:00:00Z`) - Date.parse(`${fromIso}T00:00:00Z`)) / 864e5,
-  );
+  return Math.round((parseIso(toIso) - parseIso(fromIso)) / 864e5);
 }
