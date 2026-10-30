@@ -91,7 +91,8 @@ export async function extractHoldings(
     messages: [{ role: "user", content: [fileBlock, { type: "text", text: EXTRACTION_PROMPT }] }],
   });
 
-  if (res.stop_reason === "refusal") throw new ExtractInvalidOutputError();
+  // Anything but a natural end (max_tokens truncation, refusal, tool/pause) is unusable.
+  if (res.stop_reason !== "end_turn") throw new ExtractInvalidOutputError();
   const text = res.content.flatMap((b) => (b.type === "text" ? [b.text] : [])).join("\n");
   const rows = parseReply(text);
 
@@ -113,9 +114,11 @@ export async function extractHoldings(
       const cost = parseNumber(r.cost);
       if (cost === null || cost < 0) {
         warnings.add("Ignored a cost that was negative or unreadable");
+      } else if (!r.costKind) {
+        warnings.add(`Cost ignored for ${ticker}: unclear whether it is per share or total`);
       } else {
         h.cost = cost;
-        if (r.costKind) h.costKind = r.costKind;
+        h.costKind = r.costKind;
       }
     }
     const account = r.account?.trim().slice(0, 64);

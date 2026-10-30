@@ -3,7 +3,7 @@ import {
   ExtractUnavailableError,
   extractHoldings,
 } from "@/lib/extract/claude";
-import { MAX_PDF_PAGES, checkLimits, pdfPageCount, sniffMediaType } from "@/lib/extract/files";
+import { MAX_PDF_BYTES, MAX_PDF_PAGES, checkLimits, pdfPageCount, sniffMediaType } from "@/lib/extract/files";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -38,6 +38,7 @@ export async function POST(req: Request): Promise<Response> {
   const file = files[0];
   if (files.length !== 1 || !(file instanceof File)) return fail("bad_request", 400);
 
+  if (file.size > MAX_PDF_BYTES) return fail("too_large", 413); // before buffering
   const bytes = new Uint8Array(await file.arrayBuffer());
   const mediaType = sniffMediaType(bytes);
   if (!mediaType) return fail("unsupported_type", 415);

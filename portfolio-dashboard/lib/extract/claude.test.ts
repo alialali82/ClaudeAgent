@@ -60,6 +60,19 @@ describe("extractHoldings reply parsing", () => {
     const rows = Array.from({ length: 501 }, () => ({ ticker: "A", shares: 1 }));
     await expect(run(stub(JSON.stringify(rows)))).rejects.toBeInstanceOf(ExtractInvalidOutputError);
   });
+  it("rejects a truncated (max_tokens) reply even if a later ] exists", async () => {
+    const text = '[{"ticker":"AAPL","shares":1},{"ticker":"MSFT","shares":2}]';
+    const cut: Stub = { messages: { create: vi.fn().mockResolvedValue({ content: [{ type: "text", text }], stop_reason: "max_tokens" }) } };
+    await expect(run(cut)).rejects.toBeInstanceOf(ExtractInvalidOutputError);
+    const ok: Stub = { messages: { create: vi.fn().mockResolvedValue({ content: [{ type: "text", text }], stop_reason: "end_turn" }) } };
+    expect((await run(ok)).holdings).toHaveLength(2);
+  });
+  it("rejects other abnormal stop reasons", async () => {
+    for (const stop_reason of ["pause_turn", "tool_use", "model_context_window_exceeded"]) {
+      const c: Stub = { messages: { create: vi.fn().mockResolvedValue({ content: [{ type: "text", text: '[{"ticker":"A","shares":1}]' }], stop_reason }) } };
+      await expect(run(c)).rejects.toBeInstanceOf(ExtractInvalidOutputError);
+    }
+  });
   it("treats a refusal or empty reply as invalid output", async () => {
     const client: Stub = { messages: { create: vi.fn().mockResolvedValue({ content: [], stop_reason: "refusal" }) } };
     await expect(run(client)).rejects.toBeInstanceOf(ExtractInvalidOutputError);
@@ -83,6 +96,15 @@ describe("extractHoldings post-processing", () => {
     expect(r.holdings).toEqual([{ ticker: "C", shares: 2 }]);
     expect(r.warnings.some((w) => /share/i.test(w))).toBe(true);
     expect(r.warnings.some((w) => /cost/i.test(w))).toBe(true);
+  });
+  it("drops a cost that has no costKind, with a warning", async () => {
+    const r = await run(stub('[{"ticker":"aapl","shares":1,"cost":500}]'));
+    expect(r.holdings).toEqual([{ ticker: "AAPL", shares: 1 }]);
+    expect(r.warnings).toContain("Cost ignored for AAPL: unclear whether it is per share or total");
+  });
+  it("keeps a cost that has a valid costKind", async () => {
+    const r = await run(stub('[{"ticker":"AAPL","shares":1,"cost":500,"costKind":"total"}]'));
+    expect(r.holdings).toEqual([{ ticker: "AAPL", shares: 1, cost: 500, costKind: "total" }]);
   });
   it("drops malformed dates", async () => {
     const r = await run(stub('[{"ticker":"A","shares":1,"openDate":"Jan 5 2020"}]'));

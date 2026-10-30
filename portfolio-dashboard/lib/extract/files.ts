@@ -37,10 +37,13 @@ export function checkLimits(mediaType: MediaType, byteLength: number): LimitResu
   return byteLength > max ? { ok: false, status: 413, code: "too_large" } : { ok: true };
 }
 
+// Residual risk: pdf-lib parses untrusted PDFs synchronously and without resource limits, so a
+// hostile file can burn CPU/memory. Mitigated only by the 10 MB cap, the function timeout and
+// Task 10 rate limiting.
 /** Page count, or null when the PDF is unreadable or encrypted. */
 export async function pdfPageCount(bytes: Uint8Array): Promise<number | null> {
   try {
-    const doc = await PDFDocument.load(bytes, { ignoreEncryption: false, updateMetadata: false });
+    const doc = await PDFDocument.load(bytes, { ignoreEncryption: false, updateMetadata: false, throwOnInvalidObject: true });
     return doc.getPageCount();
   } catch {
     return null;

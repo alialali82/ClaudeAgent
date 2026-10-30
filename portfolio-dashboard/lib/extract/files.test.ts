@@ -63,6 +63,10 @@ describe("pdfPageCount", () => {
     const good = await makePdf(2);
     expect(await pdfPageCount(good.slice(0, 20))).toBeNull();
   });
+  it("returns null for a valid header followed by garbage", async () => {
+    const junk = new TextEncoder().encode("%PDF-1.7\n1 0 obj << /Type /Catalog /Pages 9 0 R >> endobj\n<<<<garbage>>>> trailer");
+    expect(await pdfPageCount(junk)).toBeNull();
+  });
   it("returns null for an encrypted PDF", async () => {
     const good = new TextDecoder("latin1").decode(await makePdf(1));
     const enc = good.replace("/Root", "/Encrypt << /Filter /Standard /V 1 /R 2 /O (aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa) /U (bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb) /P -4 >> /Root");

@@ -75,6 +75,35 @@ describe("POST /api/extract", () => {
     expect(r.status).toBe(413);
     expect(create).not.toHaveBeenCalled();
   });
+  it("413 on declared file size > 10 MB before reading its bytes", async () => {
+    const big = new Uint8Array(10 * MB + 1);
+    big.set(PNG);
+    const request = req([{ bytes: big }]);
+    const spy = vi.spyOn(Blob.prototype, "arrayBuffer");
+    const r = await POST(request);
+    expect(r.status).toBe(413);
+    expect(await body(r)).toEqual({ error: "too_large" });
+    expect(spy).not.toHaveBeenCalled();
+    expect(create).not.toHaveBeenCalled();
+  });
+  it("accepts an image of exactly 5 MB", async () => {
+    reply("[]");
+    expect((await POST(req([{ bytes: pngOf(5 * MB) }]))).status).toBe(200);
+  });
+  it("accepts a valid PDF of exactly 10 MB", async () => {
+    reply("[]");
+    const pdf = await pdfOf(1);
+    const padded = new Uint8Array(10 * MB).fill(0x0a); // trailing newlines after %%EOF
+    padded.set(pdf);
+    const r = await POST(req([{ bytes: padded, name: "a.pdf", type: "application/pdf" }]));
+    expect(r.status).toBe(200);
+  });
+  it("422 unreadable_pdf for a valid header with garbage", async () => {
+    const junk = new TextEncoder().encode("%PDF-1.7\n1 0 obj << /Type /Catalog /Pages 9 0 R >> endobj\n<<<<garbage>>>>");
+    const r = await POST(req([{ bytes: junk, name: "a.pdf", type: "application/pdf" }]));
+    expect(r.status).toBe(422);
+    expect(await body(r)).toEqual({ error: "unreadable_pdf" });
+  });
   it("415 for unsupported bytes, even when the name and MIME claim an image", async () => {
     const r = await POST(req([{ bytes: new TextEncoder().encode("hello"), name: "fake.png", type: "image/png" }]));
     expect(r.status).toBe(415);
