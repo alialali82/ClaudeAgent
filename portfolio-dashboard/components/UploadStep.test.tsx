@@ -115,6 +115,22 @@ describe("UploadStep", () => {
     expect(props.onHoldings).not.toHaveBeenCalled();
   });
 
+  it("shows a visible focus state on the chooser label and drop zone (native input handles Enter/Space)", async () => {
+    const { user, input } = setup();
+    const label = input.closest("label")!;
+    const zone = input.closest(".drop")!;
+    expect(label).not.toHaveAttribute("data-focused");
+    await user.tab();
+    expect(input).toHaveFocus();
+    expect(label).toHaveAttribute("data-focused", "true");
+    expect(zone).toHaveAttribute("data-focused", "true");
+    expect(input).toHaveAttribute("type", "file");
+    expect(input).not.toHaveAttribute("tabindex", "-1");
+    await user.tab();
+    expect(label).not.toHaveAttribute("data-focused");
+    expect(zone).not.toHaveAttribute("data-focused");
+  });
+
   it("offers manual entry", async () => {
     const { user, props } = setup();
     await user.click(screen.getByRole("button", { name: /type holdings manually/i }));

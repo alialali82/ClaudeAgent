@@ -18,6 +18,7 @@ export function UploadStep({ onSheets, onHoldings, onManual, getToken }: Props) 
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [over, setOver] = useState(false);
+  const [focused, setFocused] = useState(false);
   const input = useRef<HTMLInputElement>(null);
 
   async function handle(file: File) {
@@ -57,6 +58,7 @@ export function UploadStep({ onSheets, onHoldings, onManual, getToken }: Props) 
       <div
         className="drop"
         data-over={over}
+        data-focused={focused ? "true" : undefined}
         onDragOver={(e) => {
           e.preventDefault();
           setOver(true);
@@ -72,7 +74,7 @@ export function UploadStep({ onSheets, onHoldings, onManual, getToken }: Props) 
         <p>Drop a holdings file here</p>
         <p className="muted">.xlsx, .csv, saved .json, screenshot (PNG/JPEG/WebP) or PDF, up to {MAX_UPLOAD_MB} MB</p>
         <p style={{ marginTop: 12 }}>
-          <label className="btn btn-primary" style={{ display: "inline-flex", alignItems: "center", cursor: "pointer" }}>
+          <label className="btn btn-primary" data-focused={focused ? "true" : undefined} style={{ display: "inline-flex", alignItems: "center", cursor: "pointer" }}>
             Choose a file
             <input
               ref={input}
@@ -80,6 +82,8 @@ export function UploadStep({ onSheets, onHoldings, onManual, getToken }: Props) 
               className="sr-only"
               accept=".xlsx,.csv,.json,image/png,image/jpeg,image/webp,application/pdf"
               disabled={busy}
+              onFocus={(e) => setFocused(e.target.matches(":focus-visible"))}
+              onBlur={() => setFocused(false)}
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 if (f) void handle(f);

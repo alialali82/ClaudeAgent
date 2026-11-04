@@ -58,3 +58,5 @@ button, select, input { font: inherit; color: inherit; }
   .row .wide { grid-column: auto; }
   .row .full { grid-column: 1 / -1; }
 }
+
+.btn[data-focused="true"], .drop[data-focused="true"] { outline: 2px solid var(--cold); outline-offset: 2px; }
