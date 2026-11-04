@@ -44,6 +44,8 @@ button, select, input { font: inherit; color: inherit; }
 .warn::before { content: "\26A0\FE0E  "; color: var(--brass); }
 .tag { display: inline-block; font: 500 11px var(--mono); padding: 1px 6px; border-radius: 4px; background: var(--brass-soft); color: var(--brass); border: 1px solid var(--brass); }
 .rows { list-style: none; margin: 0; padding: 0; }
+.rows.panel { padding: 0 16px; }
+.rows .row:first-child { border-top: none; }
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); }
 .row .wide { grid-column: 1 / -1; }
 .bar { height: 10px; background: var(--soft); border-radius: 5px; overflow: hidden; }
