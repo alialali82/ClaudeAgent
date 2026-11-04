@@ -2,6 +2,8 @@
 
 import type { Dashboard } from "@/lib/dashboard/build";
 import "@/styles/dashboard.css";
+import { SectionBoundary } from "./SectionBoundary";
+import { Treemap } from "./Treemap";
 
 const REASONS: Record<string, string> = {
   unknown: "ticker not found",
@@ -73,6 +75,18 @@ export function DashboardView({ dashboard }: { dashboard: Dashboard }) {
   return (
     <div className="wrap dash">
       <Status d={dashboard} />
+      <section className="sec" id="map-sec">
+        <div className="sechead">
+          <h2>The map</h2>
+          <p>
+            Each tile is one stock, sized by its combined value across your accounts and coloured by how far the price
+            sits from the Street average target. Tap a tile to open that stock.
+          </p>
+        </div>
+        <SectionBoundary>
+          <Treemap dashboard={dashboard} />
+        </SectionBoundary>
+      </section>
       {/*
         14a sections are added below as they land: Hero, The map (+ Attention), Since.
         14b: Performance, Risk, Holdings.

@@ -82,3 +82,12 @@ describe("DashboardView text hygiene", () => {
     expect(container.textContent).not.toMatch(BAD);
   });
 });
+
+describe("DashboardView map section", () => {
+  it("draws The map with one tile per position", () => {
+    const d = sampleDashboard();
+    render(<DashboardView dashboard={d} />);
+    expect(screen.getByRole("heading", { name: "The map" })).toBeInTheDocument();
+    expect(screen.getAllByRole("button")).toHaveLength(d.positions.length);
+  });
+});
