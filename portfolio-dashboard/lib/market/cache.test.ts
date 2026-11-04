@@ -61,8 +61,13 @@ describe("cached", () => {
     expect(await cached("k6", 60, async () => 9)).toBe(9);
     expect(log).not.toHaveBeenCalled();
   });
-  it("ignores malformed stored values", async () => {
-    await kv.set("k7", "garbage");
-    expect(await cached("k7", 60, async () => 3)).toBe(3);
-  });
+  it.each([["garbage string", "garbage"], ["legacy {x:1}", { x: 1 }], ["{v:undefined}", { v: undefined }], ["number", 7], ["array", [1]]])(
+    "falls through to load() for a malformed stored value: %s",
+    async (_n, stored) => {
+      await kv.set("k7", stored);
+      const load = vi.fn(async () => 3);
+      expect(await cached("k7", 60, load)).toBe(3);
+      expect(load).toHaveBeenCalledTimes(1);
+    },
+  );
 });

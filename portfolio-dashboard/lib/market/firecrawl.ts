@@ -18,6 +18,7 @@ export class ScrapeError extends Error {
 const ENDPOINT = "https://api.firecrawl.dev/v2/scrape";
 const TIMEOUT_MS = 15_000;
 const RETRY_DELAY_MS = 500;
+const MAX_MARKDOWN = 1_000_000; // characters; larger pages are treated as junk
 
 type Attempt = { md: string } | { retry: true };
 
@@ -53,7 +54,7 @@ async function attempt(url: string, key: string, maxAgeMs?: number, signal?: Abo
   } catch {
     md = undefined;
   }
-  if (typeof md !== "string" || !md.trim()) throw new ScrapeError("empty");
+  if (typeof md !== "string" || !md.trim() || md.length > MAX_MARKDOWN) throw new ScrapeError("empty");
   return { md };
 }
 

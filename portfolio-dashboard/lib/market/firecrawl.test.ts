@@ -125,6 +125,15 @@ describe("scrape", () => {
     expect((await scrape(URL_).catch((x) => x)).code).toBe("empty");
   });
 
+  it("markdown over 1 MB is rejected as empty", async () => {
+    vi.stubGlobal("fetch", async () => ok("x".repeat(1_000_001)));
+    expect((await scrape(URL_).catch((e) => e)).code).toBe("empty");
+  });
+  it("markdown of exactly 1 MB is accepted", async () => {
+    vi.stubGlobal("fetch", async () => ok("x".repeat(1_000_000)));
+    expect((await scrape(URL_)).length).toBe(1_000_000);
+  });
+
   it("timeout is NOT retried: one fetch, one spend, code timeout", async () => {
     const fx = vi.fn(async () => {
       throw new DOMException("t", "TimeoutError");

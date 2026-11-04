@@ -391,3 +391,28 @@ describe("deadline / abort signal", () => {
     expect(spendAllowed).not.toHaveBeenCalled();
   });
 });
+
+describe("Yahoo 429 retry on query2", () => {
+  const byHost = (q1: Handler, q2: Handler): Handler => (u, b) => (u.includes("query2.") ? q2(u, b) : q1(u, b));
+  const yahooCalls = () => calls.filter((u) => u.includes("/chart/NVDA"));
+
+  it("retries once on query2 and succeeds", async () => {
+    stub({ "yahoo:NVDA": byHost(fail(429), () => new Response(read("yahoo-chart-nvda.json"))) });
+    const m = await getTickerMarket("NVDA", NOW);
+    expect(m.price).toBe(202.35);
+    expect(yahooCalls().map((u) => new URL(u).host)).toEqual(["query1.finance.yahoo.com", "query2.finance.yahoo.com"]);
+    expect(yahooCalls()[1].split("//")[1].split("/").slice(1).join("/")).toBe(yahooCalls()[0].split("//")[1].split("/").slice(1).join("/"));
+  });
+  it("still 429 -> NoPriceError with errors.yahoo = http_429 after exactly two attempts", async () => {
+    stub({ "yahoo:NVDA": fail(429) });
+    const e = (await getTickerMarket("NVDA", NOW).catch((x) => x)) as NoPriceError;
+    expect(e).toBeInstanceOf(NoPriceError);
+    expect(e.errors.yahoo).toBe("http_429");
+    expect(yahooCalls()).toHaveLength(2);
+  });
+  it("does not retry other failures", async () => {
+    stub({ "yahoo:NVDA": fail(500) });
+    await getTickerMarket("NVDA", NOW).catch(() => {});
+    expect(yahooCalls()).toHaveLength(1);
+  });
+});

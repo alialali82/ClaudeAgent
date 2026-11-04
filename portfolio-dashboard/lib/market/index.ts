@@ -51,14 +51,33 @@ function isNotFound(json: unknown): boolean {
   return !!err && err.code === "Not Found";
 }
 
-const yahooUrl = (t: string) =>
-  `https://query1.finance.yahoo.com/v8/finance/chart/${toSourceSymbol(t, "yahoo")}?range=1y&interval=1d`;
+const yahooUrl = (t: string, host = "query1") =>
+  `https://${host}.finance.yahoo.com/v8/finance/chart/${toSourceSymbol(t, "yahoo")}?range=1y&interval=1d`;
+
+/** Yahoo rate-limits shared cloud IPs per host: on HTTP 429 retry ONCE on query2 (same path and query). */
+async function fetchYahoo(t: string, signal?: AbortSignal): Promise<unknown> {
+  try {
+    return await fetchJson(yahooUrl(t), { signal });
+  } catch (e) {
+    if (codeOf(e) !== "http_429") throw e;
+    return fetchJson(yahooUrl(t, "query2"), { signal });
+  }
+}
+
+/** Parsers are specified not to throw, but a thrown parser must only fail its own source. */
+function safe<T>(fn: () => T): T | undefined {
+  try {
+    return fn();
+  } catch {
+    return undefined;
+  }
+}
 
 async function yahooRaw(t: string, signal?: AbortSignal): Promise<unknown> {
   return cached(`mkt:yahoo:${t}`, TTL.prices, async () => {
     let json: unknown;
     try {
-      json = await fetchJson(yahooUrl(t), { signal });
+      json = await fetchYahoo(t, signal);
     } catch (e) {
       if (codeOf(e) === "http_404") throw new UnknownTicker(t);
       throw e;
@@ -83,7 +102,7 @@ const RATINGS_HEADER = /\|\s*Analyst\s*\|[^\n]*Price Target/i;
 const saRaw = (t: string, page: "forecast" | "ratings", signal?: AbortSignal) =>
   cached(`mkt:sa:${page}:${t}`, TTL.targets, async () => {
     const md = await scrape(saUrl(t, page), { maxAgeMs: TTL.targets * 1000, signal });
-    const valid = page === "forecast" ? parseStockAnalysisForecast(md) !== null : RATINGS_HEADER.test(md);
+    const valid = page === "forecast" ? !!safe(() => parseStockAnalysisForecast(md)) : RATINGS_HEADER.test(md);
     if (!valid) throw new ParseError();
     return md;
   });
@@ -97,7 +116,7 @@ const nqRaw = (t: string, kind: NqKind, ttl: number, signal?: AbortSignal) =>
 async function benchCloses(sym: string, today: string, signal?: AbortSignal): Promise<[string, number][]> {
   try {
     const closes = await cached(`mkt:bench:${sym}`, TTL.history, async () => {
-      const p = parseYahooChart(await fetchJson(yahooUrl(sym), { signal }));
+      const p = parseYahooChart(await fetchYahoo(sym, signal));
       if (!p) throw new Error("parse");
       return p.closes;
     });
@@ -188,7 +207,7 @@ export async function getTickerMarket(
   // (a) Yahoo
   let chart: ReturnType<typeof parseYahooChart> = null;
   if (yahoo.ok) {
-    chart = parseYahooChart(yahoo.v);
+    chart = safe(() => parseYahooChart(yahoo.v)) ?? null;
     if (!chart) errors.yahoo = "parse";
   } else {
     if (yahoo.e instanceof UnknownTicker) {
@@ -216,41 +235,50 @@ export async function getTickerMarket(
   let sp: TargetSet | null = null;
   const callLists: Call[][] = [];
   if (saF.ok) {
-    const f = parseStockAnalysisForecast(saF.v);
+    const f = safe(() => parseStockAnalysisForecast(saF.v));
     if (f) sp = f.sp;
     else errors.stockanalysis = "parse";
-    callLists.push(parseStockAnalysisCalls(saF.v, today));
+    callLists.push(safe(() => parseStockAnalysisCalls(saF.v, today)) ?? []);
   } else errors.stockanalysis = codeOf(saF.e);
-  if (saR.ok) callLists.push(parseStockAnalysisCalls(saR.v, today));
+  if (saR.ok) callLists.push(safe(() => parseStockAnalysisCalls(saR.v, today)) ?? []);
   else errors.stockanalysis ??= codeOf(saR.e);
   const calls = mergeCalls(callLists);
 
   // (c) Nasdaq / Zacks targets. `data: null` means no coverage, not an error.
   let zacks: TargetSet | null = null;
   if (nqT.ok) {
-    zacks = parseNasdaqTargets(nqT.v);
+    const z = safe(() => parseNasdaqTargets(nqT.v));
+    zacks = z ?? null;
     const noData = (nqT.v as { data?: unknown } | null)?.data === null;
-    if (!zacks && !noData) errors.nasdaq_targets = "parse";
+    if (z === undefined || (z === null && !noData)) errors.nasdaq_targets = "parse";
   } else errors.nasdaq_targets = codeOf(nqT.e);
 
   // (d) Earnings
   let next: TickerMarket["next"];
-  if (nqD.ok) next = parseNasdaqEarningsDate(nqD.v, today) ?? undefined;
-  else errors.nasdaq_earnings = codeOf(nqD.e);
+  if (nqD.ok) {
+    const n = safe(() => parseNasdaqEarningsDate(nqD.v, today));
+    if (n === undefined) errors.nasdaq_earnings = "parse";
+    else next = n ?? undefined;
+  } else errors.nasdaq_earnings = codeOf(nqD.e);
   let er: TickerMarket["er"];
   if (nqS.ok) {
-    const hist = computeEarningsMoves(parseNasdaqEarningsSurprise(nqS.v), chart.closes);
-    if (hist.length) er = { hist };
+    const closes = chart.closes;
+    const hist = safe(() => computeEarningsMoves(parseNasdaqEarningsSurprise(nqS.v), closes));
+    if (hist === undefined) errors.nasdaq_earnings ??= "parse";
+    else if (hist.length) er = { hist };
   } else errors.nasdaq_earnings ??= codeOf(nqS.e);
 
   // (e) Sector
   let sector: string | undefined;
-  if (nqP.ok) sector = parseNasdaqProfile(nqP.v)?.sector;
-  else errors.nasdaq_profile = codeOf(nqP.e);
+  if (nqP.ok) {
+    const p = safe(() => parseNasdaqProfile(nqP.v));
+    if (p === undefined) errors.nasdaq_profile = "parse";
+    else sector = p?.sector;
+  } else errors.nasdaq_profile = codeOf(nqP.e);
 
   // Beta (raw, vs SPY)
   let beta: number | null = null;
-  if (spy.length) beta = computeBeta(chart.closes, spy);
+  if (spy.length) beta = safe(() => computeBeta(chart.closes, spy)) ?? null;
   if (beta === null) errors.beta = spy.length ? "no_data" : "unavailable";
 
   const prevTargets = await snapshots(t, today, { sp, zacks });
