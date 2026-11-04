@@ -70,8 +70,23 @@ async function yahooRaw(t: string): Promise<unknown> {
 
 const saUrl = (t: string, page: "forecast" | "ratings") =>
   `https://stockanalysis.com/stocks/${toSourceSymbol(t, "stockanalysis")}/${page}/`;
+class ParseError extends Error {
+  readonly code = "parse";
+  constructor() {
+    super("parse");
+  }
+}
+
+const RATINGS_HEADER = /\|\s*Analyst\s*\|[^\n]*Price Target/i;
+
+/** Junk / 404 / layout-changed pages throw inside `load`, so they are never written to the cache. */
 const saRaw = (t: string, page: "forecast" | "ratings") =>
-  cached(`mkt:sa:${page}:${t}`, TTL.targets, () => scrape(saUrl(t, page), { maxAgeMs: TTL.targets * 1000 }));
+  cached(`mkt:sa:${page}:${t}`, TTL.targets, async () => {
+    const md = await scrape(saUrl(t, page), { maxAgeMs: TTL.targets * 1000 });
+    const valid = page === "forecast" ? parseStockAnalysisForecast(md) !== null : RATINGS_HEADER.test(md);
+    if (!valid) throw new ParseError();
+    return md;
+  });
 
 type NqKind = "analyst/targetprice" | "analyst/earnings-date" | "company/earnings-surprise" | "company/company-profile";
 const nqRaw = (t: string, kind: NqKind, ttl: number) =>
@@ -79,21 +94,27 @@ const nqRaw = (t: string, kind: NqKind, ttl: number) =>
     fetchJson(`https://api.nasdaq.com/api/${kind.split("/")[0]}/${toSourceSymbol(t, "nasdaq")}/${kind.split("/")[1]}`),
   );
 
+async function benchCloses(sym: string, today: string): Promise<[string, number][]> {
+  try {
+    const closes = await cached(`mkt:bench:${sym}`, TTL.history, async () => {
+      const p = parseYahooChart(await fetchJson(yahooUrl(sym)));
+      if (!p) throw new Error("parse");
+      return p.closes;
+    });
+    return closes.filter(([d]) => d <= today);
+  } catch {
+    return [];
+  }
+}
+
+/** SPY only: beta needs nothing else. Shares the cache entry with getBenchmarks. */
+export function getSpyCloses(now: Date = new Date()): Promise<[string, number][]> {
+  return benchCloses("SPY", now.toISOString().slice(0, 10));
+}
+
 export async function getBenchmarks(now: Date = new Date()): Promise<{ SPY: [string, number][]; QQQ: [string, number][] }> {
   const today = now.toISOString().slice(0, 10);
-  const one = async (sym: string): Promise<[string, number][]> => {
-    try {
-      const closes = await cached(`mkt:bench:${sym}`, TTL.history, async () => {
-        const p = parseYahooChart(await fetchJson(yahooUrl(sym)));
-        if (!p) throw new Error("parse");
-        return p.closes;
-      });
-      return closes.filter(([d]) => d <= today);
-    } catch {
-      return [];
-    }
-  };
-  const [SPY, QQQ] = await Promise.all([one("SPY"), one("QQQ")]);
+  const [SPY, QQQ] = await Promise.all([benchCloses("SPY", today), benchCloses("QQQ", today)]);
   return { SPY, QQQ };
 }
 
@@ -151,16 +172,8 @@ export async function getTickerMarket(ticker: string, now: Date = new Date()): P
     if (e instanceof UnknownTicker) throw e;
   }
 
-  const [yahoo, saF, saR, nqT, nqD, nqS, nqP, bench] = await Promise.all([
-    settle(yahooRaw(t)),
-    settle(saRaw(t, "forecast")),
-    settle(saRaw(t, "ratings")),
-    settle(nqRaw(t, "analyst/targetprice", TTL.targets)),
-    settle(nqRaw(t, "analyst/earnings-date", TTL.targets)),
-    settle(nqRaw(t, "company/earnings-surprise", TTL.targets)),
-    settle(nqRaw(t, "company/company-profile", TTL.profile)),
-    getBenchmarks(now),
-  ]);
+  // Resolve Yahoo FIRST: unknown tickers and Yahoo outages must cost no Firecrawl credits and no Nasdaq calls.
+  const [yahoo, spy] = await Promise.all([settle(yahooRaw(t)), getSpyCloses(now)]);
 
   const errors: Record<string, string> = {};
 
@@ -181,6 +194,15 @@ export async function getTickerMarket(ticker: string, now: Date = new Date()): P
     errors.yahoo = codeOf(yahoo.e);
   }
   if (!chart) throw new NoPriceError(errors);
+
+  const [saF, saR, nqT, nqD, nqS, nqP] = await Promise.all([
+    settle(saRaw(t, "forecast")),
+    settle(saRaw(t, "ratings")),
+    settle(nqRaw(t, "analyst/targetprice", TTL.targets)),
+    settle(nqRaw(t, "analyst/earnings-date", TTL.targets)),
+    settle(nqRaw(t, "company/earnings-surprise", TTL.targets)),
+    settle(nqRaw(t, "company/company-profile", TTL.profile)),
+  ]);
 
   // (b) StockAnalysis
   let sp: TargetSet | null = null;
@@ -220,8 +242,8 @@ export async function getTickerMarket(ticker: string, now: Date = new Date()): P
 
   // Beta (raw, vs SPY)
   let beta: number | null = null;
-  if (bench.SPY.length) beta = computeBeta(chart.closes, bench.SPY);
-  if (beta === null) errors.beta = bench.SPY.length ? "no_data" : "unavailable";
+  if (spy.length) beta = computeBeta(chart.closes, spy);
+  if (beta === null) errors.beta = spy.length ? "no_data" : "unavailable";
 
   const prevTargets = await snapshots(t, today, { sp, zacks });
 

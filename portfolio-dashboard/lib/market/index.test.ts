@@ -119,10 +119,11 @@ describe("getTickerMarket (NVDA, all sources from fixtures)", () => {
     expect(f.mock.calls.length).toBe(n);
   });
 
-  it("starts at most 7 requests for a cold ticker plus 2 benchmark requests", async () => {
+  it("starts exactly 8 requests for a cold ticker (yahoo, 2 scrapes, 4 nasdaq, SPY; no QQQ)", async () => {
     const f = stub();
     await getTickerMarket("NVDA", NOW);
-    expect(f.mock.calls.length).toBe(9);
+    expect(f.mock.calls.length).toBe(8);
+    expect(calls.some((u) => u.includes("/chart/QQQ"))).toBe(false);
     expect(calls.filter((u) => u.includes("firecrawl")).length).toBe(2);
   });
 
@@ -292,5 +293,42 @@ describe("getBenchmarks", () => {
     const b = await getBenchmarks(NOW);
     expect(b.SPY.length).toBeGreaterThan(200);
     expect(b.QQQ).toEqual([]);
+  });
+});
+
+describe("gating on a resolved Yahoo price", () => {
+  const notFound = () =>
+    new Response(JSON.stringify({ chart: { result: null, error: { code: "Not Found", description: "x" } } }));
+  const fcCalls = (f: ReturnType<typeof stub>) => f.mock.calls.filter((c) => String(c[0]).includes("firecrawl"));
+
+  it("unknown ticker: zero Firecrawl fetches, zero spendAllowed, zero Nasdaq calls", async () => {
+    const f = stub({ "yahoo:QZXV": notFound });
+    await expect(getTickerMarket("QZXV", NOW)).rejects.toBeInstanceOf(UnknownTicker);
+    expect(fcCalls(f)).toHaveLength(0);
+    expect(spendAllowed).not.toHaveBeenCalled();
+    expect(calls.some((u) => u.includes("api.nasdaq.com"))).toBe(false);
+  });
+
+  it("Yahoo 429 (no price): zero Firecrawl fetches and zero spendAllowed", async () => {
+    const f = stub({ "yahoo:NVDA": fail(429) });
+    await expect(getTickerMarket("NVDA", NOW)).rejects.toBeInstanceOf(NoPriceError);
+    expect(fcCalls(f)).toHaveLength(0);
+    expect(spendAllowed).not.toHaveBeenCalled();
+    expect(calls.some((u) => u.includes("api.nasdaq.com"))).toBe(false);
+  });
+
+  it("known ticker still scrapes both pages", async () => {
+    const f = stub();
+    await getTickerMarket("NVDA", NOW);
+    expect(fcCalls(f)).toHaveLength(2);
+  });
+
+  it("a junk StockAnalysis page is not cached: a second call scrapes again", async () => {
+    const f = stub({ "sa:forecast": () => new Response(ok("# 404")), "sa:ratings": () => new Response(ok("# 404")) });
+    const a = await getTickerMarket("NVDA", NOW);
+    expect(a.errors.stockanalysis).toBe("parse");
+    expect(fcCalls(f)).toHaveLength(2);
+    await getTickerMarket("NVDA", NOW);
+    expect(fcCalls(f)).toHaveLength(4);
   });
 });
