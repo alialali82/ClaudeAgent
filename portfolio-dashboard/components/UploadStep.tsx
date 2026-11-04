@@ -19,9 +19,21 @@ export function UploadStep({ onSheets, onHoldings, onManual, getToken }: Props) 
   const [busy, setBusy] = useState(false);
   const [over, setOver] = useState(false);
   const [focused, setFocused] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
   const input = useRef<HTMLInputElement>(null);
+  const working = useRef(false);
 
   async function handle(file: File) {
+    if (working.current) return;
+    working.current = true;
+    try {
+      await run(file);
+    } finally {
+      working.current = false;
+    }
+  }
+
+  async function run(file: File) {
     setError(null);
     const kind = classifyFile(file);
     const tooBig = sizeProblem(file, kind);
@@ -69,6 +81,8 @@ export function UploadStep({ onSheets, onHoldings, onManual, getToken }: Props) 
           e.preventDefault();
           setOver(false);
           const f = e.dataTransfer.files?.[0];
+          if (working.current) return;
+          setNote((e.dataTransfer.files?.length ?? 0) > 1 ? "Only the first file was used" : null);
           if (f) void handle(f);
         }}
       >
@@ -87,6 +101,7 @@ export function UploadStep({ onSheets, onHoldings, onManual, getToken }: Props) 
               onBlur={() => setFocused(false)}
               onChange={(e) => {
                 const f = e.target.files?.[0];
+                setNote(null);
                 if (f) void handle(f);
               }}
             />
@@ -96,6 +111,7 @@ export function UploadStep({ onSheets, onHoldings, onManual, getToken }: Props) 
       <div role="status" aria-live="polite">
         {busy && <p>Reading your file…</p>}
       </div>
+      {note && <p className="notice">{note}</p>}
       {error && (
         <p className="alert" role="alert">
           {error}

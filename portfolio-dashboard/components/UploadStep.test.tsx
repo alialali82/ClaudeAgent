@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -129,6 +129,23 @@ describe("UploadStep", () => {
     await user.tab();
     expect(label).not.toHaveAttribute("data-focused");
     expect(zone).not.toHaveAttribute("data-focused");
+  });
+
+  it("ignores drops while busy and notes when extra files are dropped", async () => {
+    let release!: (r: Response) => void;
+    const fetchMock = vi.fn(() => new Promise<Response>((r) => (release = r)));
+    vi.stubGlobal("fetch", fetchMock);
+    const { input, props } = setup();
+    const zone = input.closest(".drop")!;
+    const png = (n: string) => new File(["x"], n, { type: "image/png" });
+    fireEvent.drop(zone, { dataTransfer: { files: [png("a.png"), png("b.png")] } });
+    expect(await screen.findByText("Only the first file was used")).toBeInTheDocument();
+    await screen.findByRole("status");
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    fireEvent.drop(zone, { dataTransfer: { files: [png("c.png")] } });
+    expect(props.getToken).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    release(Response.json({ holdings: [], warnings: [] }));
   });
 
   it("offers manual entry", async () => {
