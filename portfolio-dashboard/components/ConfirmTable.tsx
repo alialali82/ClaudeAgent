@@ -104,11 +104,11 @@ export function ConfirmTable({ rows, onChange, onAnalyze, warnings = [] }: Props
               </div>
               <div className="field">
                 <label htmlFor={id("a")}>Account</label>
-                <input id={id("a")} value={r.account} onChange={(e) => patch(r.id, { account: e.target.value })} />
+                <input id={id("a")} value={r.account} aria-invalid={issues.account ? true : undefined} aria-describedby={desc("account")} onChange={(e) => patch(r.id, { account: e.target.value })} />
               </div>
               <div className="field">
                 <label htmlFor={id("d")}>Open date</label>
-                <input id={id("d")} type="date" value={r.openDate} onChange={(e) => patch(r.id, { openDate: e.target.value })} />
+                <input id={id("d")} type="date" value={r.openDate} aria-invalid={issues.date ? true : undefined} aria-describedby={desc("date")} onChange={(e) => patch(r.id, { openDate: e.target.value })} />
               </div>
               <div className="field">
                 <span className="lbl" aria-hidden="true">&nbsp;</span>
@@ -119,7 +119,7 @@ export function ConfirmTable({ rows, onChange, onAnalyze, warnings = [] }: Props
               {(r.source === "ai" || Object.keys(issues).length > 0) && (
                 <div className="full" style={{ gridColumn: "1 / -1", display: "flex", flexWrap: "wrap", gap: "4px 14px", alignItems: "center" }}>
                   {r.source === "ai" && <span className="tag">AI-read — check</span>}
-                  {(["ticker", "shares", "duplicate", "cost"] as const).map((k) =>
+                  {(["ticker", "shares", "account", "date", "duplicate", "cost"] as const).map((k) =>
                     issues[k] ? (
                       <p key={k} id={id(k)} className="warn">
                         {issues[k]}

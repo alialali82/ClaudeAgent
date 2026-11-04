@@ -152,6 +152,44 @@ describe("ConfirmTable", () => {
     vi.unstubAllGlobals();
   });
 
+  it("flags out-of-range values like the server and excludes those rows from the post", async () => {
+    const onAnalyze = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <Harness
+        initial={[
+          row({ ticker: "AAA", shares: "1" }),
+          row({ ticker: "BBB", shares: "99999999999" }),
+          row({ ticker: "CCC", shares: "1", cost: "10000000000000", costKind: "total" }),
+          row({ ticker: "DDD", shares: "1", cost: "10000000000001", costKind: "total" }),
+          row({ ticker: "EEE", shares: "1", account: "x".repeat(65) }),
+          row({ ticker: "FFF", shares: "1", openDate: "2023-02-30" }),
+          row({ ticker: "GGG", shares: "1", account: "x".repeat(64), openDate: "2023-02-28" }),
+        ]}
+        onAnalyze={onAnalyze}
+      />,
+    );
+    const li = items();
+    expect(within(li[1]).getByText("Shares must be between 0 and 1,000,000,000")).toBeInTheDocument();
+    expect(within(li[2]).queryByText("Cost is too large")).not.toBeInTheDocument();
+    expect(within(li[3]).getByText("Cost is too large")).toBeInTheDocument();
+    expect(within(li[4]).getByText("Account name is too long (max 64)")).toBeInTheDocument();
+    expect(within(li[5]).getByText("Open date is not a valid date")).toBeInTheDocument();
+    expect(within(li[6]).queryByText(/too long|valid date/)).not.toBeInTheDocument();
+    await user.click(analyzeBtn());
+    const sent = onAnalyze.mock.calls[0][0] as Holding[];
+    expect(sent.map((h) => h.ticker)).toEqual(["AAA", "CCC", "GGG"]);
+  });
+
+  it("flags typed huge shares inline", async () => {
+    const user = userEvent.setup();
+    render(<Harness initial={[newRow()]} onAnalyze={() => {}} />);
+    await user.type(screen.getByLabelText("Ticker"), "AAPL");
+    await user.type(screen.getByLabelText("Shares"), "99999999999");
+    expect(screen.getByText(/between 0 and 1,000,000,000/)).toBeInTheDocument();
+    expect(analyzeBtn()).toBeDisabled();
+  });
+
   it("never touches web storage", async () => {
     const set = vi.spyOn(Storage.prototype, "setItem");
     const user = userEvent.setup();

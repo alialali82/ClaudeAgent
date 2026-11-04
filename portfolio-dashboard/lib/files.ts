@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { HOLDINGS_MAX, IMAGE_MAX, MAX_UPLOAD_BYTES, MAX_UPLOAD_MB, PDF_MAX, SAVED_JSON_MAX } from "@/lib/limits";
+import { ACCOUNT_MAX, COST_MAX, HOLDINGS_MAX, SHARES_MAX, IMAGE_MAX, MAX_UPLOAD_BYTES, MAX_UPLOAD_MB, PDF_MAX, SAVED_JSON_MAX } from "@/lib/limits";
 import type { Holding } from "@/lib/types";
 
 export type FileKind = "sheet" | "json" | "image" | "pdf";
@@ -30,10 +30,10 @@ export function sizeProblem(file: File, kind: FileKind | null): string | null {
 
 const SavedHolding = z.object({
   ticker: z.string().min(1).max(64),
-  shares: z.number().finite().positive().max(1e9),
-  cost: z.number().finite().min(0).max(1e13).optional(),
+  shares: z.number().finite().positive().max(SHARES_MAX),
+  cost: z.number().finite().min(0).max(COST_MAX).optional(),
   costKind: z.enum(["total", "perShare"]).optional(),
-  account: z.string().max(64).optional(),
+  account: z.string().max(ACCOUNT_MAX).optional(),
   openDate: z.string().max(10).optional(),
 });
 const Saved = z.union([

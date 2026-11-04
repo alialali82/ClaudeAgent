@@ -2,6 +2,7 @@ import { z } from "zod";
 import { buildDashboard } from "@/lib/dashboard/build";
 import { guardRequest } from "@/lib/guard/guard";
 import { NoPriceError, UnknownTicker, getBenchmarks, getTickerMarket } from "@/lib/market";
+import { ACCOUNT_MAX, COST_MAX, SHARES_MAX } from "@/lib/limits";
 import { mergeDuplicates, normalizeTicker } from "@/lib/parse/normalize";
 import type { Holding, TickerMarket } from "@/lib/types";
 
@@ -25,13 +26,13 @@ const CONTROL = /[\u0000-\u001f\u007f-\u009f]/g;
 
 const HoldingSchema = z.object({
   ticker: z.string().max(64),
-  shares: z.number().finite().positive().max(1e9),
-  cost: z.number().finite().min(0).max(1e13).optional(),
+  shares: z.number().finite().positive().max(SHARES_MAX),
+  cost: z.number().finite().min(0).max(COST_MAX).optional(),
   costKind: z.enum(["total", "perShare"]).optional(),
   account: z
     .string()
     .transform((s) => s.replace(CONTROL, "").trim())
-    .pipe(z.string().max(64))
+    .pipe(z.string().max(ACCOUNT_MAX))
     .optional(),
   openDate: z.string().optional(),
 });

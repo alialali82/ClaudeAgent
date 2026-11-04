@@ -1,3 +1,4 @@
+import { ACCOUNT_MAX, COST_MAX, SHARES_MAX } from "@/lib/limits";
 import { mergeDuplicates, normalizeTicker, parseNumber } from "@/lib/parse/normalize";
 import type { Holding } from "@/lib/types";
 
@@ -37,19 +38,31 @@ const ISO = /^\d{4}-\d{2}-\d{2}$/;
 
 function sharesOf(r: Row): number | null {
   const n = parseNumber(r.shares.trim());
-  return n !== null && n > 0 ? n : null;
+  return n !== null && n > 0 && n <= SHARES_MAX ? n : null;
 }
 function costOf(r: Row): number | null {
   if (r.cost.trim() === "") return null;
   const n = parseNumber(r.cost.trim());
-  return n !== null && n >= 0 ? n : null;
+  return n !== null && n >= 0 && n <= COST_MAX ? n : null;
+}
+const costTooLarge = (r: Row): boolean => {
+  const n = r.cost.trim() === "" ? null : parseNumber(r.cost.trim());
+  return n !== null && n > COST_MAX;
+};
+const accountTooLong = (r: Row): boolean => r.account.trim().length > ACCOUNT_MAX;
+function dateOk(d: string): boolean {
+  if (d === "") return true;
+  if (!ISO.test(d)) return false;
+  const t = Date.parse(`${d}T00:00:00Z`);
+  return Number.isFinite(t) && new Date(t).toISOString().slice(0, 10) === d;
 }
 
 export const isBlankRow = (r: Row): boolean =>
   !r.ticker.trim() && !r.shares.trim() && !r.cost.trim() && !r.account.trim() && !r.openDate;
-export const isValidRow = (r: Row): boolean => normalizeTicker(r.ticker) !== null && sharesOf(r) !== null;
+export const isValidRow = (r: Row): boolean =>
+  normalizeTicker(r.ticker) !== null && sharesOf(r) !== null && !costTooLarge(r) && !accountTooLong(r) && dateOk(r.openDate);
 
-export type RowIssues = { ticker?: string; shares?: string; cost?: string; duplicate?: string };
+export type RowIssues = { ticker?: string; shares?: string; cost?: string; duplicate?: string; account?: string; date?: string };
 
 const dupKey = (r: Row): string | null => {
   const t = normalizeTicker(r.ticker);
@@ -71,9 +84,15 @@ export function rowIssues(r: Row, dups: Map<string, number>): RowIssues {
   if (isBlankRow(r)) return out;
   if (r.ticker.trim() && normalizeTicker(r.ticker) === null) out.ticker = "Ticker not recognised";
   else if (!r.ticker.trim()) out.ticker = "Ticker is required";
-  if (sharesOf(r) === null) out.shares = "Shares must be greater than 0";
+  if (sharesOf(r) === null) {
+    const n = parseNumber(r.shares.trim());
+    out.shares = n !== null && n > SHARES_MAX ? "Shares must be between 0 and 1,000,000,000" : "Shares must be greater than 0";
+  }
   if (r.cost.trim() === "") out.cost = "No cost: excluded from return";
+  else if (costTooLarge(r)) out.cost = "Cost is too large";
   else if (costOf(r) === null) out.cost = "Cost isn't a valid number: excluded from return";
+  if (accountTooLong(r)) out.account = `Account name is too long (max ${ACCOUNT_MAX})`;
+  if (!dateOk(r.openDate)) out.date = "Open date is not a valid date";
   const k = dupKey(r);
   if (k && (dups.get(k) ?? 0) > 1)
     out.duplicate = "Duplicate (same ticker, account and date) — will be merged when you analyze";
@@ -81,9 +100,9 @@ export function rowIssues(r: Row, dups: Map<string, number>): RowIssues {
 }
 
 export function rowToHolding(r: Row): Holding | null {
-  const ticker = normalizeTicker(r.ticker);
-  const shares = sharesOf(r);
-  if (!ticker || shares === null) return null;
+  if (!isValidRow(r)) return null;
+  const ticker = normalizeTicker(r.ticker)!;
+  const shares = sharesOf(r)!;
   const h: Holding = { ticker, shares };
   const cost = costOf(r);
   if (cost !== null) {
@@ -92,7 +111,7 @@ export function rowToHolding(r: Row): Holding | null {
   }
   const account = r.account.trim();
   if (account) h.account = account;
-  if (ISO.test(r.openDate)) h.openDate = r.openDate;
+  if (r.openDate) h.openDate = r.openDate;
   return h;
 }
 
