@@ -2,8 +2,10 @@
 
 import type { Dashboard } from "@/lib/dashboard/build";
 import "@/styles/dashboard.css";
+import { Attention } from "./Attention";
 import { Hero } from "./Hero";
 import { SectionBoundary } from "./SectionBoundary";
+import { Since } from "./Since";
 import { Treemap } from "./Treemap";
 
 const REASONS: Record<string, string> = {
@@ -90,7 +92,13 @@ export function DashboardView({ dashboard }: { dashboard: Dashboard }) {
         <SectionBoundary>
           <Treemap dashboard={dashboard} />
         </SectionBoundary>
+        <SectionBoundary>
+          <Attention dashboard={dashboard} />
+        </SectionBoundary>
       </section>
+      <SectionBoundary>
+        <Since dashboard={dashboard} />
+      </SectionBoundary>
       {/*
         14a sections are added below as they land: Hero, The map (+ Attention), Since.
         14b: Performance, Risk, Holdings.

@@ -99,3 +99,21 @@ describe("DashboardView hero", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Portfolio value" })).toHaveTextContent(/^\$[\d,]+$/);
   });
 });
+
+describe("DashboardView 14a sections", () => {
+  it("renders hero, map, attention and since for the sample dashboard", () => {
+    const d = sampleDashboard();
+    const { container } = render(<DashboardView dashboard={d} />);
+    expect(container.querySelector("header.hero")).not.toBeNull();
+    expect(container.querySelector("#map-sec .map")).not.toBeNull();
+    expect(container.querySelectorAll("#map-sec .flag")).toHaveLength(d.flags.length);
+    expect(screen.getByRole("heading", { name: "Since 6 Oct close" })).toBeInTheDocument();
+    expect(container.querySelector(".fail")).toBeNull();
+  });
+
+  it("shows the degraded dashboard's no-target tiles as neutral", () => {
+    const { container } = render(<DashboardView dashboard={degradedDashboard()} />);
+    expect(container.querySelectorAll(".tile.tn").length).toBeGreaterThan(0);
+    expect(container.querySelector(".fail")).toBeNull();
+  });
+});
