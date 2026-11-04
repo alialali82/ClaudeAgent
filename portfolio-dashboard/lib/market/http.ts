@@ -1,5 +1,5 @@
 // Direct JSON fetch for Yahoo / Nasdaq. Errors carry only a short code, never URL, headers or body.
-export type HttpErrorCode = "timeout" | "network" | "bad_json" | "too_large" | `http_${number}`;
+export type HttpErrorCode = "timeout" | "deadline" | "network" | "bad_json" | "too_large" | `http_${number}`;
 
 export class HttpError extends Error {
   readonly code: HttpErrorCode;
@@ -42,12 +42,17 @@ async function readCapped(res: Response): Promise<string> {
   return Buffer.concat(chunks).toString("utf8");
 }
 
-export async function fetchJson(url: string, opts: { timeoutMs?: number } = {}): Promise<unknown> {
+export async function fetchJson(
+  url: string,
+  opts: { timeoutMs?: number; signal?: AbortSignal } = {},
+): Promise<unknown> {
+  if (opts.signal?.aborted) throw new HttpError("deadline");
   let text: string;
   try {
+    const timeout = AbortSignal.timeout(opts.timeoutMs ?? 10_000);
     const res = await fetch(url, {
       headers: { "User-Agent": UA, Accept: "application/json" },
-      signal: AbortSignal.timeout(opts.timeoutMs ?? 10_000),
+      signal: opts.signal ? AbortSignal.any([timeout, opts.signal]) : timeout,
     });
     if (!res.ok) {
       await res.body?.cancel().catch(() => {});
@@ -56,7 +61,7 @@ export async function fetchJson(url: string, opts: { timeoutMs?: number } = {}):
     text = await readCapped(res);
   } catch (e) {
     if (e instanceof HttpError) throw e;
-    throw new HttpError(isTimeout(e) ? "timeout" : "network");
+    throw new HttpError(opts.signal?.aborted ? "deadline" : isTimeout(e) ? "timeout" : "network");
   }
   try {
     return JSON.parse(text);

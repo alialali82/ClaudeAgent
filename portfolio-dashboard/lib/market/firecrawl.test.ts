@@ -125,15 +125,56 @@ describe("scrape", () => {
     expect((await scrape(URL_).catch((x) => x)).code).toBe("empty");
   });
 
-  it("timeout retries once then throws timeout", async () => {
-    vi.useFakeTimers();
-    const f = vi.fn(async () => {
+  it("timeout is NOT retried: one fetch, one spend, code timeout", async () => {
+    const fx = vi.fn(async () => {
       throw new DOMException("t", "TimeoutError");
     });
-    vi.stubGlobal("fetch", f);
-    const p = scrape(URL_).catch((e) => e);
+    vi.stubGlobal("fetch", fx);
+    expect((await scrape(URL_).catch((e) => e)).code).toBe("timeout");
+    expect(fx).toHaveBeenCalledTimes(1);
+    expect(spendAllowed).toHaveBeenCalledTimes(1);
+  });
+
+  it("uses a 15 s timeout", async () => {
+    const spy = vi.spyOn(AbortSignal, "timeout");
+    vi.stubGlobal("fetch", vi.fn(async () => ok()));
+    await scrape(URL_);
+    expect(spy).toHaveBeenCalledWith(15_000);
+  });
+
+  it("already-aborted signal: no spend, no fetch, code deadline", async () => {
+    const fx = vi.fn();
+    vi.stubGlobal("fetch", fx);
+    const c = new AbortController();
+    c.abort();
+    expect((await scrape(URL_, { signal: c.signal }).catch((e) => e)).code).toBe("deadline");
+    expect(fx).not.toHaveBeenCalled();
+    expect(spendAllowed).not.toHaveBeenCalled();
+  });
+
+  it("abort mid-flight gives deadline", async () => {
+    vi.stubGlobal(
+      "fetch",
+      (_u: string, init: RequestInit) =>
+        new Promise((_r, rej) => init.signal?.addEventListener("abort", () => rej(init.signal?.reason))),
+    );
+    const c = new AbortController();
+    const p = scrape(URL_, { signal: c.signal }).catch((e) => e);
+    setTimeout(() => c.abort(), 10);
+    expect((await p).code).toBe("deadline");
+  });
+
+  it("abort during the retry delay stops before the second spend", async () => {
+    vi.useFakeTimers();
+    const fx = vi.fn(async () => new Response("", { status: 429 }));
+    vi.stubGlobal("fetch", fx);
+    const c = new AbortController();
+    const p = scrape(URL_, { signal: c.signal }).catch((e) => e);
+    await vi.advanceTimersByTimeAsync(100);
+    c.abort();
     await vi.advanceTimersByTimeAsync(600);
-    expect((await p).code).toBe("timeout");
-    expect(f).toHaveBeenCalledTimes(2);
+    expect((await p).code).toBe("deadline");
+    expect(fx).toHaveBeenCalledTimes(1);
+    expect(spendAllowed).toHaveBeenCalledTimes(1);
   });
 });

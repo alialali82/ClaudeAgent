@@ -4,7 +4,7 @@
 // Errors carry only a short code: never the key, URL or response text. Each request costs ~1 credit.
 import { spendAllowed } from "@/lib/guard/spend";
 
-export type ScrapeErrorCode = "budget" | "unavailable" | "auth" | "timeout" | "empty" | "failed";
+export type ScrapeErrorCode = "budget" | "unavailable" | "auth" | "timeout" | "deadline" | "empty" | "failed";
 
 export class ScrapeError extends Error {
   readonly code: ScrapeErrorCode;
@@ -16,12 +16,13 @@ export class ScrapeError extends Error {
 }
 
 const ENDPOINT = "https://api.firecrawl.dev/v2/scrape";
-const TIMEOUT_MS = 25_000;
+const TIMEOUT_MS = 15_000;
 const RETRY_DELAY_MS = 500;
 
-type Attempt = { md: string } | { retry: ScrapeErrorCode };
+type Attempt = { md: string } | { retry: true };
 
-async function attempt(url: string, key: string, maxAgeMs?: number): Promise<Attempt> {
+async function attempt(url: string, key: string, maxAgeMs?: number, signal?: AbortSignal): Promise<Attempt> {
+  if (signal?.aborted) throw new ScrapeError("deadline");
   if (!(await spendAllowed("firecrawl", 1))) throw new ScrapeError("budget");
   let res: Response;
   try {
@@ -34,14 +35,16 @@ async function attempt(url: string, key: string, maxAgeMs?: number): Promise<Att
         onlyMainContent: true,
         ...(maxAgeMs !== undefined ? { maxAge: maxAgeMs } : {}),
       }),
-      signal: AbortSignal.timeout(TIMEOUT_MS),
+      signal: signal ? AbortSignal.any([AbortSignal.timeout(TIMEOUT_MS), signal]) : AbortSignal.timeout(TIMEOUT_MS),
     });
   } catch (e) {
+    // Timeouts are not retried (a retry would just burn a second credit); neither are network errors.
+    if (signal?.aborted) throw new ScrapeError("deadline");
     const n = (e as { name?: string } | null)?.name;
-    return { retry: n === "TimeoutError" || n === "AbortError" ? "timeout" : "failed" };
+    throw new ScrapeError(n === "TimeoutError" || n === "AbortError" ? "timeout" : "failed");
   }
   if (res.status === 401 || res.status === 403) throw new ScrapeError("auth");
-  if (res.status === 429 || res.status >= 500) return { retry: "failed" };
+  if (res.status === 429 || res.status >= 500) return { retry: true };
   if (!res.ok) throw new ScrapeError("failed");
   let md: unknown;
   try {
@@ -54,13 +57,14 @@ async function attempt(url: string, key: string, maxAgeMs?: number): Promise<Att
   return { md };
 }
 
-export async function scrape(url: string, opts: { maxAgeMs?: number } = {}): Promise<string> {
+export async function scrape(url: string, opts: { maxAgeMs?: number; signal?: AbortSignal } = {}): Promise<string> {
   const key = process.env.FIRECRAWL_API_KEY;
   if (!key) throw new ScrapeError("unavailable");
-  const first = await attempt(url, key, opts.maxAgeMs);
+  const first = await attempt(url, key, opts.maxAgeMs, opts.signal);
   if ("md" in first) return first.md;
   await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
-  const second = await attempt(url, key, opts.maxAgeMs);
+  if (opts.signal?.aborted) throw new ScrapeError("deadline");
+  const second = await attempt(url, key, opts.maxAgeMs, opts.signal);
   if ("md" in second) return second.md;
-  throw new ScrapeError(second.retry);
+  throw new ScrapeError("failed");
 }

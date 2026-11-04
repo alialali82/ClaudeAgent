@@ -51,4 +51,24 @@ describe("fetchJson", () => {
     expect(e.code).toBe("network");
     expect(e.message).not.toMatch(/secret/);
   });
+
+  it("already-aborted signal: no fetch, code deadline", async () => {
+    const f = vi.fn();
+    vi.stubGlobal("fetch", f);
+    const c = new AbortController();
+    c.abort();
+    expect(((await fetchJson("https://example.test/x", { signal: c.signal }).catch((x) => x)) as HttpError).code).toBe("deadline");
+    expect(f).not.toHaveBeenCalled();
+  });
+  it("abort mid-flight gives deadline, not timeout", async () => {
+    vi.stubGlobal(
+      "fetch",
+      (_u: string, init: RequestInit) =>
+        new Promise((_r, rej) => init.signal?.addEventListener("abort", () => rej(init.signal?.reason))),
+    );
+    const c = new AbortController();
+    setTimeout(() => c.abort(), 10);
+    const e = (await fetchJson("https://example.test/x", { signal: c.signal }).catch((x) => x)) as HttpError;
+    expect(e.code).toBe("deadline");
+  });
 });

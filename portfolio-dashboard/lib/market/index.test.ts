@@ -332,3 +332,62 @@ describe("gating on a resolved Yahoo price", () => {
     expect(fcCalls(f)).toHaveLength(4);
   });
 });
+
+describe("deadline / abort signal", () => {
+  const hang: Handler = (_u, _b) => new Promise<Response>(() => {});
+  /** stubbed fetch that waits on the request signal */
+  const waitOnSignal = (init?: RequestInit) =>
+    new Promise<Response>((_r, rej) => init?.signal?.addEventListener("abort", () => rej(init.signal?.reason)));
+
+  it("pre-aborted signal: NoPriceError with errors.yahoo = deadline, no fetch, no spend", async () => {
+    const f = stub();
+    const c = new AbortController();
+    c.abort();
+    const e = (await getTickerMarket("NVDA", NOW, { signal: c.signal }).catch((x) => x)) as NoPriceError;
+    expect(e).toBeInstanceOf(NoPriceError);
+    expect(e.errors.yahoo).toBe("deadline");
+    expect(f).not.toHaveBeenCalled();
+    expect(spendAllowed).not.toHaveBeenCalled();
+  });
+
+  it("abort mid-flight returns a partial market with deadline codes and the rest intact", async () => {
+    const base = stub();
+    const real = base.getMockImplementation()!;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: string, init?: RequestInit) => {
+        if (input.includes("targetprice") || input.includes("firecrawl")) return waitOnSignal(init);
+        return real(input, init);
+      }),
+    );
+    void hang;
+    const c = new AbortController();
+    setTimeout(() => c.abort(), 50);
+    const m = await getTickerMarket("NVDA", NOW, { signal: c.signal });
+    expect(m.price).toBe(202.35);
+    expect(m.errors.nasdaq_targets).toBe("deadline");
+    expect(m.errors.stockanalysis).toBe("deadline");
+    expect(m.zacks).toBeNull();
+    expect(m.sp).toBeNull();
+    expect(m.sector).toBe("Technology");
+    expect(m.next).toBeDefined();
+  });
+
+  it("a signal that aborts after Yahoo skips remaining outbound calls (no fetch, no spend)", async () => {
+    const c = new AbortController();
+    const f = stub({
+      "yahoo:NVDA": () => {
+        queueMicrotask(() => c.abort());
+        return new Response(read("yahoo-chart-nvda.json"));
+      },
+    });
+    const m = await getTickerMarket("NVDA", NOW, { signal: c.signal });
+    expect(m.price).toBe(202.35);
+    expect(m.errors.stockanalysis).toBe("deadline");
+    expect(m.errors.nasdaq_targets).toBe("deadline");
+    expect(m.errors.nasdaq_earnings).toBe("deadline");
+    expect(m.errors.nasdaq_profile).toBe("deadline");
+    expect(f.mock.calls.some((x) => String(x[0]).includes("firecrawl"))).toBe(false);
+    expect(spendAllowed).not.toHaveBeenCalled();
+  });
+});

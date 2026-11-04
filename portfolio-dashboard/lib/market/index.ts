@@ -54,11 +54,11 @@ function isNotFound(json: unknown): boolean {
 const yahooUrl = (t: string) =>
   `https://query1.finance.yahoo.com/v8/finance/chart/${toSourceSymbol(t, "yahoo")}?range=1y&interval=1d`;
 
-async function yahooRaw(t: string): Promise<unknown> {
+async function yahooRaw(t: string, signal?: AbortSignal): Promise<unknown> {
   return cached(`mkt:yahoo:${t}`, TTL.prices, async () => {
     let json: unknown;
     try {
-      json = await fetchJson(yahooUrl(t));
+      json = await fetchJson(yahooUrl(t), { signal });
     } catch (e) {
       if (codeOf(e) === "http_404") throw new UnknownTicker(t);
       throw e;
@@ -80,24 +80,24 @@ class ParseError extends Error {
 const RATINGS_HEADER = /\|\s*Analyst\s*\|[^\n]*Price Target/i;
 
 /** Junk / 404 / layout-changed pages throw inside `load`, so they are never written to the cache. */
-const saRaw = (t: string, page: "forecast" | "ratings") =>
+const saRaw = (t: string, page: "forecast" | "ratings", signal?: AbortSignal) =>
   cached(`mkt:sa:${page}:${t}`, TTL.targets, async () => {
-    const md = await scrape(saUrl(t, page), { maxAgeMs: TTL.targets * 1000 });
+    const md = await scrape(saUrl(t, page), { maxAgeMs: TTL.targets * 1000, signal });
     const valid = page === "forecast" ? parseStockAnalysisForecast(md) !== null : RATINGS_HEADER.test(md);
     if (!valid) throw new ParseError();
     return md;
   });
 
 type NqKind = "analyst/targetprice" | "analyst/earnings-date" | "company/earnings-surprise" | "company/company-profile";
-const nqRaw = (t: string, kind: NqKind, ttl: number) =>
+const nqRaw = (t: string, kind: NqKind, ttl: number, signal?: AbortSignal) =>
   cached(`mkt:nq:${kind}:${t}`, ttl, () =>
-    fetchJson(`https://api.nasdaq.com/api/${kind.split("/")[0]}/${toSourceSymbol(t, "nasdaq")}/${kind.split("/")[1]}`),
+    fetchJson(`https://api.nasdaq.com/api/${kind.split("/")[0]}/${toSourceSymbol(t, "nasdaq")}/${kind.split("/")[1]}`, { signal }),
   );
 
-async function benchCloses(sym: string, today: string): Promise<[string, number][]> {
+async function benchCloses(sym: string, today: string, signal?: AbortSignal): Promise<[string, number][]> {
   try {
     const closes = await cached(`mkt:bench:${sym}`, TTL.history, async () => {
-      const p = parseYahooChart(await fetchJson(yahooUrl(sym)));
+      const p = parseYahooChart(await fetchJson(yahooUrl(sym), { signal }));
       if (!p) throw new Error("parse");
       return p.closes;
     });
@@ -108,13 +108,16 @@ async function benchCloses(sym: string, today: string): Promise<[string, number]
 }
 
 /** SPY only: beta needs nothing else. Shares the cache entry with getBenchmarks. */
-export function getSpyCloses(now: Date = new Date()): Promise<[string, number][]> {
-  return benchCloses("SPY", now.toISOString().slice(0, 10));
+export function getSpyCloses(now: Date = new Date(), opts: { signal?: AbortSignal } = {}): Promise<[string, number][]> {
+  return benchCloses("SPY", now.toISOString().slice(0, 10), opts.signal);
 }
 
-export async function getBenchmarks(now: Date = new Date()): Promise<{ SPY: [string, number][]; QQQ: [string, number][] }> {
+export async function getBenchmarks(
+  now: Date = new Date(),
+  opts: { signal?: AbortSignal } = {},
+): Promise<{ SPY: [string, number][]; QQQ: [string, number][] }> {
   const today = now.toISOString().slice(0, 10);
-  const [SPY, QQQ] = await Promise.all([benchCloses("SPY", today), benchCloses("QQQ", today)]);
+  const [SPY, QQQ] = await Promise.all([benchCloses("SPY", today, opts.signal), benchCloses("QQQ", today, opts.signal)]);
   return { SPY, QQQ };
 }
 
@@ -160,9 +163,14 @@ function mergeCalls(lists: Call[][]): Call[] {
     .map((x) => x.c);
 }
 
-export async function getTickerMarket(ticker: string, now: Date = new Date()): Promise<TickerMarket> {
+export async function getTickerMarket(
+  ticker: string,
+  now: Date = new Date(),
+  opts: { signal?: AbortSignal } = {},
+): Promise<TickerMarket> {
   const t = ticker.trim().toUpperCase().replace(/\./g, "-");
   if (!TICKER_RE.test(t)) throw new UnknownTicker(t);
+  const signal = opts.signal;
   const today = now.toISOString().slice(0, 10);
   const kv = getKv();
   const negKey = `mkt:unknown:${t}`;
@@ -173,7 +181,7 @@ export async function getTickerMarket(ticker: string, now: Date = new Date()): P
   }
 
   // Resolve Yahoo FIRST: unknown tickers and Yahoo outages must cost no Firecrawl credits and no Nasdaq calls.
-  const [yahoo, spy] = await Promise.all([settle(yahooRaw(t)), getSpyCloses(now)]);
+  const [yahoo, spy] = await Promise.all([settle(yahooRaw(t, signal)), getSpyCloses(now, { signal })]);
 
   const errors: Record<string, string> = {};
 
@@ -196,12 +204,12 @@ export async function getTickerMarket(ticker: string, now: Date = new Date()): P
   if (!chart) throw new NoPriceError(errors);
 
   const [saF, saR, nqT, nqD, nqS, nqP] = await Promise.all([
-    settle(saRaw(t, "forecast")),
-    settle(saRaw(t, "ratings")),
-    settle(nqRaw(t, "analyst/targetprice", TTL.targets)),
-    settle(nqRaw(t, "analyst/earnings-date", TTL.targets)),
-    settle(nqRaw(t, "company/earnings-surprise", TTL.targets)),
-    settle(nqRaw(t, "company/company-profile", TTL.profile)),
+    settle(saRaw(t, "forecast", signal)),
+    settle(saRaw(t, "ratings", signal)),
+    settle(nqRaw(t, "analyst/targetprice", TTL.targets, signal)),
+    settle(nqRaw(t, "analyst/earnings-date", TTL.targets, signal)),
+    settle(nqRaw(t, "company/earnings-surprise", TTL.targets, signal)),
+    settle(nqRaw(t, "company/company-profile", TTL.profile, signal)),
   ]);
 
   // (b) StockAnalysis
