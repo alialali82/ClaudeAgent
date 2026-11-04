@@ -2,6 +2,7 @@
 
 import type { Dashboard } from "@/lib/dashboard/build";
 import "@/styles/dashboard.css";
+import { Hero } from "./Hero";
 import { SectionBoundary } from "./SectionBoundary";
 import { Treemap } from "./Treemap";
 
@@ -75,6 +76,9 @@ export function DashboardView({ dashboard }: { dashboard: Dashboard }) {
   return (
     <div className="wrap dash">
       <Status d={dashboard} />
+      <SectionBoundary>
+        <Hero dashboard={dashboard} />
+      </SectionBoundary>
       <section className="sec" id="map-sec">
         <div className="sechead">
           <h2>The map</h2>

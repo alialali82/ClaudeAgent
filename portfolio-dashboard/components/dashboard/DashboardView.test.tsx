@@ -91,3 +91,11 @@ describe("DashboardView map section", () => {
     expect(screen.getAllByRole("button")).toHaveLength(d.positions.length);
   });
 });
+
+describe("DashboardView hero", () => {
+  it("opens with the portfolio value", () => {
+    const d = sampleDashboard();
+    render(<DashboardView dashboard={d} />);
+    expect(screen.getByRole("heading", { level: 1, name: "Portfolio value" })).toHaveTextContent(/^\$[\d,]+$/);
+  });
+});
