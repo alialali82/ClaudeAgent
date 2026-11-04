@@ -35,3 +35,10 @@ Note: the live NVDA numbers (avg 327.14, n 62) differ from the figures quoted in
 ## Dates and calendars
 
 Yahoo bar dates must be converted to exchange-local with `gmtoffset` (a bar at 14:30 UTC is the same day anyway, but a timestamp just after local midnight in a UTC+ market would be the previous UTC day).
+
+## Symbols and company profile (probed 2026-11-04, task 11b)
+
+- Yahoo: `BRK-B`. StockAnalysis URL path: `brk.b` (`/stocks/brk.b/forecast/` loads). Nasdaq analyst/company API: `BRK.B` (`BRK-B` answers `Symbol not exists`; `BRK.B` is recognised, `/analyst/BRK.B/targetprice` returns `data: null`, `No record found.`). Mapping lives in `lib/market/symbols.ts`.
+- `api.nasdaq.com/api/company/<T>/company-profile` (direct JSON, no credits): `data.Sector.value` / `data.Industry.value` (NVDA: Technology / Semiconductors; BRK.B: both null). Unknown symbol: `data: null`, rCode 400. Fixtures `nasdaq-profile-*.json`.
+- Firecrawl v2 scrape verified in docs: `POST https://api.firecrawl.dev/v2/scrape`, Bearer auth, body `{url, formats, onlyMainContent, maxAge(ms)}`, 200 `{success, data:{markdown, metadata}}`; errors 400/402/403/404/409/429/500/503.
+- Yahoo from this sandbox returned HTTP 429 (shared proxy IP) during the BRK-B probe, so BRK-B on Yahoo is by convention, not live-verified here.
