@@ -39,7 +39,7 @@ describe("fetchJson", () => {
   });
   it("rejects bodies over 2 MB", async () => {
     vi.stubGlobal("fetch", async () => new Response("[" + "1,".repeat(1_100_000) + "1]", { status: 200 }));
-    const e = await fetchJson("https://example.test/x").catch((x) => x);
+    const e = (await fetchJson("https://example.test/x").catch((x) => x)) as HttpError;
     expect(e).toBeInstanceOf(HttpError);
     expect(e.code).toBe("too_large");
   });
@@ -47,7 +47,7 @@ describe("fetchJson", () => {
     vi.stubGlobal("fetch", async () => {
       throw new TypeError("secret-host.internal refused");
     });
-    const e = await fetchJson("https://example.test/x").catch((x) => x);
+    const e = (await fetchJson("https://example.test/x").catch((x) => x)) as HttpError;
     expect(e.code).toBe("network");
     expect(e.message).not.toMatch(/secret/);
   });
