@@ -334,7 +334,6 @@ describe("gating on a resolved Yahoo price", () => {
 });
 
 describe("deadline / abort signal", () => {
-  const hang: Handler = (_u, _b) => new Promise<Response>(() => {});
   /** stubbed fetch that waits on the request signal */
   const waitOnSignal = (init?: RequestInit) =>
     new Promise<Response>((_r, rej) => init?.signal?.addEventListener("abort", () => rej(init.signal?.reason)));
@@ -360,7 +359,6 @@ describe("deadline / abort signal", () => {
         return real(input, init);
       }),
     );
-    void hang;
     const c = new AbortController();
     setTimeout(() => c.abort(), 50);
     const m = await getTickerMarket("NVDA", NOW, { signal: c.signal });
