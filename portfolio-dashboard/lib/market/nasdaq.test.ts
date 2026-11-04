@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { parseNasdaqTargets } from "./nasdaq";
+import { parseNasdaqProfile, parseNasdaqTargets } from "./nasdaq";
 
 const fx = (name: string) =>
   JSON.parse(readFileSync(fileURLToPath(new URL(`./__fixtures__/${name}`, import.meta.url)), "utf8"));
@@ -60,5 +60,18 @@ describe("parseNasdaqTargets", () => {
 
   it("returns null for a truncated JSON-derived object", () => {
     expect(parseNasdaqTargets({ data: { symbol: "nvda" } })).toBeNull();
+  });
+});
+
+describe("parseNasdaqProfile", () => {
+  it("reads Sector from the NVDA fixture", () => {
+    expect(parseNasdaqProfile(fx("nasdaq-profile-nvda.json"))).toEqual({ sector: "Technology" });
+  });
+  it("null when sector is null (BRK.B fixture), blank, or data is null", () => {
+    expect(parseNasdaqProfile(fx("nasdaq-profile-brkb-nosector.json"))).toBeNull();
+    expect(parseNasdaqProfile({ data: { Sector: { value: "  " } } })).toBeNull();
+    expect(parseNasdaqProfile({ data: null })).toBeNull();
+    expect(parseNasdaqProfile(null)).toBeNull();
+    expect(parseNasdaqProfile("x")).toBeNull();
   });
 });

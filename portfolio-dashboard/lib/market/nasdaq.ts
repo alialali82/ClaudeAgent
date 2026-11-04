@@ -26,3 +26,18 @@ export function parseNasdaqTargets(json: unknown): TargetSet | null {
     return null;
   }
 }
+
+/**
+ * api.nasdaq.com/api/company/<T>/company-profile (recorded 2026-11-04): data.Sector = { label, value }.
+ * value is null for some symbols (e.g. BRK.B) and data is null for unknown symbols.
+ */
+export function parseNasdaqProfile(json: unknown): { sector: string } | null {
+  try {
+    if (!isRecord(json) || !isRecord(json.data) || !isRecord(json.data.Sector)) return null;
+    const v = json.data.Sector.value;
+    if (typeof v !== "string" || !v.trim()) return null;
+    return { sector: v.trim() };
+  } catch {
+    return null;
+  }
+}
