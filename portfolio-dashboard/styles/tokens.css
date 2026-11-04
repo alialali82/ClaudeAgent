@@ -1,0 +1,23 @@
+:root {
+  --bg: #ECEFE8; --panel: #F8F9F5; --ink: #15201B; --muted: #56635B; --line: #D2D8CD; --soft: #E2E7DE;
+  --brass: #8A5A0B; --brass-soft: #F1E3C4; --cold: #2F5184; --cold-soft: #DCE4F1;
+  --gain: #17703F; --loss: #AE2A20;
+  --display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0F1512; --panel: #161E1A; --ink: #E4EBE5; --muted: #98A69D; --line: #2A3630; --soft: #1D2722;
+    --brass: #E0AE52; --brass-soft: #3A2D12; --cold: #8FB0E6; --cold-soft: #1B2638;
+    --gain: #5CCB8C; --loss: #F2837A;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0F1512; --panel: #161E1A; --ink: #E4EBE5; --muted: #98A69D; --line: #2A3630; --soft: #1D2722;
+  --brass: #E0AE52; --brass-soft: #3A2D12; --cold: #8FB0E6; --cold-soft: #1B2638;
+  --gain: #5CCB8C; --loss: #F2837A;
+}
+:root[data-theme="light"] { color-scheme: light; }
