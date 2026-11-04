@@ -18,6 +18,19 @@ vi.mock("./Turnstile", async () => {
   };
 });
 
+vi.mock("./dashboard/DashboardView", () => ({
+  DashboardView: ({ dashboard }: { dashboard: { total: number; positions: unknown[]; failures: { ticker: string; code: string }[] } }) => (
+    <section>
+      <p>
+        Dashboard ready: ${dashboard.total.toLocaleString("en-US")} across {dashboard.positions.length} positions
+      </p>
+      {dashboard.failures.map((f) => (
+        <p key={f.ticker}>{f.ticker}</p>
+      ))}
+    </section>
+  ),
+}));
+
 const enc = new TextEncoder();
 const dash = { total: 12345, positions: [{}, {}], failures: [{ ticker: "ZZZZ", code: "unknown" }] };
 const ndjson = (...lines: object[]) =>
