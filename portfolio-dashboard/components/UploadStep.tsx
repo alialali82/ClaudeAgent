@@ -43,6 +43,7 @@ export function UploadStep({ onSheets, onHoldings, onManual, getToken }: Props) 
         onHoldings(r.holdings, r.warnings, "ai");
       }
     } catch (e) {
+      if (e instanceof Error && e.name === "TurnstileSuperseded") return;
       if (e instanceof ApiError) setError(errorText(e.code));
       else if (e instanceof Error && "code" in e && typeof e.code === "string") setError(errorText(e.code));
       else setError(e instanceof Error ? e.message : errorText(""));

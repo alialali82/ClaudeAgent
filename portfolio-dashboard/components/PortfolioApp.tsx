@@ -64,7 +64,7 @@ export function PortfolioApp() {
       setDashboard(result);
       setStep("dashboard");
     } catch (e) {
-      if (ctrl.signal.aborted || (e instanceof Error && e.name === "AbortError")) return;
+      if (ctrl.signal.aborted || (e instanceof Error && (e.name === "AbortError" || e.name === "TurnstileSuperseded"))) return;
       const code = e instanceof ApiError ? e.code : e instanceof Error && "code" in e && typeof e.code === "string" ? e.code : "";
       setError(errorText(code));
       setStep("confirm");

@@ -25,6 +25,15 @@ export class TurnstileError extends Error {
   }
 }
 
+/** The call was replaced by a newer getToken(); callers treat it as a silent cancel. */
+export class TurnstileSuperseded extends Error {
+  code = "superseded";
+  constructor() {
+    super("superseded");
+    this.name = "TurnstileSuperseded";
+  }
+}
+
 export type TurnstileHandle = { getToken: () => Promise<string> };
 
 let scriptPromise: Promise<TurnstileApi> | null = null;
@@ -58,17 +67,18 @@ export function Turnstile({ ref }: { ref?: Ref<TurnstileHandle> }) {
   const pending = useRef<Pending | null>(null);
   const ready = useRef<Promise<void> | null>(null);
 
-  useEffect(() => {
-    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-    if (!siteKey || !box.current) return;
+  /** Loads the script and renders the widget once; a failed load is retried on the next call. */
+  const ensure = (): Promise<void> => {
     const el = box.current;
-    let cancelled = false;
-    ready.current = loadScript()
-      .then((t) => {
-        if (cancelled) return;
+    if (!el) return Promise.reject(new TurnstileError());
+    if (widget.current !== null) return Promise.resolve();
+    ready.current ??= loadScript().then(
+      (t) => {
+        ready.current = null;
+        if (widget.current !== null || !box.current) return;
         api.current = t;
         widget.current = t.render(el, {
-          sitekey: siteKey,
+          sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
           execution: "execute",
           appearance: "interaction-only",
           callback: (token: string) => {
@@ -81,10 +91,21 @@ export function Turnstile({ ref }: { ref?: Ref<TurnstileHandle> }) {
           },
           "expired-callback": () => undefined,
         });
-      })
-      .catch(() => undefined);
+      },
+      () => {
+        ready.current = null;
+        throw new TurnstileError();
+      },
+    );
+    return ready.current;
+  };
+
+  useEffect(() => {
+    if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) return;
+    ensure().catch(() => undefined);
     return () => {
-      cancelled = true;
+      pending.current?.reject(new TurnstileSuperseded());
+      pending.current = null;
       if (widget.current) api.current?.remove(widget.current);
       widget.current = null;
     };
@@ -93,16 +114,15 @@ export function Turnstile({ ref }: { ref?: Ref<TurnstileHandle> }) {
   useImperativeHandle(ref, () => ({
     async getToken() {
       if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) return "";
-      await ready.current;
+      // A newer request replaces any call still waiting.
+      pending.current?.reject(new TurnstileSuperseded());
+      pending.current = null;
+      await ensure();
       const t = api.current;
       const id = widget.current;
       if (!t || id === null) throw new TurnstileError();
       return new Promise<string>((resolve, reject) => {
-        const timer = setTimeout(() => {
-          pending.current = null;
-          reject(new TurnstileError("timeout"));
-        }, TIMEOUT_MS);
-        pending.current = {
+        const entry: Pending = {
           resolve: (tok) => {
             clearTimeout(timer);
             resolve(tok);
@@ -112,6 +132,12 @@ export function Turnstile({ ref }: { ref?: Ref<TurnstileHandle> }) {
             reject(e);
           },
         };
+        const timer = setTimeout(() => {
+          if (pending.current === entry) pending.current = null;
+          reject(new TurnstileError("timeout"));
+        }, TIMEOUT_MS);
+        pending.current?.reject(new TurnstileSuperseded());
+        pending.current = entry;
         t.reset(id);
         t.execute(id);
       });

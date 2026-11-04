@@ -2,7 +2,7 @@
 import { act, render } from "@testing-library/react";
 import { createRef } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { Turnstile, TurnstileError, type TurnstileHandle } from "./Turnstile";
+import { Turnstile, TurnstileError, TurnstileSuperseded, type TurnstileHandle } from "./Turnstile";
 
 type Opts = { callback: (t: string) => void; "error-callback": () => void };
 let opts: Opts;
@@ -59,6 +59,45 @@ describe("Turnstile", () => {
     const assertion = expect(p).rejects.toMatchObject({ code: "captcha" });
     await vi.advanceTimersByTimeAsync(15_001);
     await assertion;
+  });
+
+  it("a superseded call rejects with a typed error and the second call survives the first call's deadline", async () => {
+    const ref = createRef<TurnstileHandle>();
+    render(<Turnstile ref={ref} />);
+    await act(async () => {});
+    api.execute.mockImplementation(() => {});
+    vi.useFakeTimers();
+    const first = ref.current!.getToken();
+    const firstAssertion = expect(first).rejects.toBeInstanceOf(TurnstileSuperseded);
+    await vi.advanceTimersByTimeAsync(10_000);
+    const second = ref.current!.getToken();
+    await firstAssertion;
+    await vi.advanceTimersByTimeAsync(6_000); // past the first call's 15 s deadline
+    opts.callback("second-token");
+    await expect(second).resolves.toBe("second-token");
+  });
+
+  it("retries a failed script load on the next getToken()", async () => {
+    delete (window as unknown as { turnstile?: unknown }).turnstile;
+    const scripts: HTMLScriptElement[] = [];
+    const append = vi.spyOn(document.head, "appendChild").mockImplementation((n) => {
+      scripts.push(n as HTMLScriptElement);
+      return n;
+    });
+    const ref = createRef<TurnstileHandle>();
+    const { unmount } = render(<Turnstile ref={ref} />);
+    scripts[0].onerror!(new Event("error"));
+    await act(async () => {});
+    // the failed load is not cached: the next call loads the script again
+    const p = ref.current!.getToken();
+    await act(async () => {});
+    expect(scripts.length).toBe(2);
+    (window as unknown as { turnstile: unknown }).turnstile = api;
+    api.execute.mockImplementation(() => opts.callback("ok"));
+    scripts[1].onload!(new Event("load"));
+    await expect(p).resolves.toBe("ok");
+    append.mockRestore();
+    unmount();
   });
 
   it("resolves an empty token when no site key is configured", async () => {
