@@ -260,6 +260,38 @@ describe("POST /api/analyze streaming", () => {
   });
 });
 
+describe("bounds and disconnect", () => {
+  const one = (o: Record<string, unknown>) => post({ holdings: [{ ticker: "NVDA", shares: 1, ...o }] });
+  it("shares bound 1e9 ok, 1e9+1 rejected", async () => {
+    expect((await POST(one({ shares: 1e9 }))).status).toBe(200);
+    const bad = await POST(one({ shares: 1e9 + 1 }));
+    expect(bad.status).toBe(400);
+    expect(await bad.json()).toEqual({ error: "bad_request" });
+  });
+  it("cost bound 1e13 ok, 1e13+1 rejected", async () => {
+    expect((await POST(one({ cost: 1e13 }))).status).toBe(200);
+    expect((await POST(one({ cost: 1e13 + 1 }))).status).toBe(400);
+  });
+  it("aborting the request signal stops further lookups without throwing", async () => {
+    const ac = new AbortController();
+    getTickerMarket.mockImplementation(async (t: string) => {
+      ac.abort();
+      await new Promise((r) => setTimeout(r, 2));
+      return refMarket(t);
+    });
+    const text = JSON.stringify(hold(...REF_KEYS));
+    const req = new Request("http://localhost/api/analyze", {
+      method: "POST",
+      body: text,
+      signal: ac.signal,
+      headers: { "content-type": "application/json", "content-length": String(text.length) },
+    });
+    const res = await POST(req);
+    await expect(res.text()).resolves.toBeTypeOf("string");
+    expect(getTickerMarket.mock.calls.length).toBeLessThanOrEqual(5);
+  });
+});
+
 describe("privacy", () => {
   it("logs nothing about holdings or tickers", async () => {
     const spies = (["log", "info", "warn", "error", "debug"] as const).map((m) => vi.spyOn(console, m).mockImplementation(() => {}));

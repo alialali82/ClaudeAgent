@@ -15,6 +15,19 @@ export type DashboardPosition = Position & {
   market: Omit<TickerMarket, "closes">;
 };
 
+type Group<T> = T & {
+  /** Sum of lot values over lots that have a numeric cost. */
+  costedValue: number;
+  /** Server-computed return over costed lots; null when cost is null or 0. */
+  ret: number | null;
+};
+
+/**
+ * Consumers MUST use `ret` for returns and never compute `value / cost - 1`:
+ * `value` covers all lots but `cost` only the costed ones, so that ratio is
+ * inflated for mixed groups, and `cost` can be 0. `ret` is
+ * `cost !== null && cost > 0 ? costedValue / cost - 1 : null`.
+ */
 export type Dashboard = {
   asof: string;
   prevAsof: string;
@@ -22,9 +35,10 @@ export type Dashboard = {
   cost: number | null;
   /** Value of the lots that have a cost; the numerator for the portfolio return. */
   costedValue: number;
+  ret: number | null;
   prev: number;
-  accounts: Portfolio["accounts"];
-  sectors: Portfolio["sectors"];
+  accounts: Group<Portfolio["accounts"][number]>[];
+  sectors: Group<Portfolio["sectors"][number]>[];
   positions: DashboardPosition[];
   flags: Flag[];
   changes: ChangeRow[];
@@ -52,6 +66,20 @@ function mode(dates: string[]): string | null {
     if (best === null || c > (n.get(best) ?? 0) || (c === (n.get(best) ?? 0) && d > best)) best = d;
   }
   return best;
+}
+
+const retOf = (cost: number | null, costedValue: number): number | null =>
+  cost !== null && cost > 0 ? costedValue / cost - 1 : null;
+
+/** Drops undefined-valued keys so the Dashboard is stable under a JSON round trip. */
+function stripUndefined<T>(x: T): T {
+  if (Array.isArray(x)) return x.map(stripUndefined) as T;
+  if (x && typeof x === "object") {
+    const o: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(x)) if (v !== undefined) o[k] = stripUndefined(v);
+    return o as T;
+  }
+  return x;
 }
 
 const isPriced = (m: TickerMarket | undefined): m is TickerMarket =>
@@ -100,16 +128,33 @@ export function buildDashboard(
   });
 
   const costedValue = pf.lots.reduce((a, l) => (l.cost !== null ? a + l.value : a), 0);
+  const sectorOf = new Map(pf.positions.map((p) => [p.ticker, p.sector]));
+  const costedBy = (key: (l: (typeof pf.lots)[number]) => string) => {
+    const m = new Map<string, number>();
+    for (const l of pf.lots) if (l.cost !== null) m.set(key(l), (m.get(key(l)) ?? 0) + l.value);
+    return m;
+  };
+  const byAccount = costedBy((l) => l.account ?? "Portfolio");
+  const bySector = costedBy((l) => sectorOf.get(l.ticker) ?? "Other");
+  const accounts = pf.accounts.map((a) => {
+    const cv = byAccount.get(a.name) ?? 0;
+    return { ...a, costedValue: cv, ret: retOf(a.cost, cv) };
+  });
+  const sectors = pf.sectors.map((s) => {
+    const cv = bySector.get(s.name) ?? 0;
+    return { ...s, costedValue: cv, ret: retOf(s.cost, cv) };
+  });
 
-  return {
+  return stripUndefined({
     asof,
     prevAsof,
     total: pf.total,
     cost: pf.cost,
     costedValue,
+    ret: retOf(pf.cost, costedValue),
     prev: pf.prev,
-    accounts: pf.accounts,
-    sectors: pf.sectors,
+    accounts,
+    sectors,
     positions,
     flags,
     changes,
@@ -134,5 +179,5 @@ export function buildDashboard(
       .map((m) => ({ ticker: m.ticker, missing: Object.keys(m.errors).sort() }))
       .sort((a, b) => a.ticker.localeCompare(b.ticker)),
     generatedAt: `${today}T00:00:00Z`,
-  };
+  });
 }

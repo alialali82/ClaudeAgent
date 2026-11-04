@@ -25,8 +25,8 @@ const CONTROL = /[\u0000-\u001f\u007f-\u009f]/g;
 
 const HoldingSchema = z.object({
   ticker: z.string().max(64),
-  shares: z.number().finite().positive(),
-  cost: z.number().finite().min(0).optional(),
+  shares: z.number().finite().positive().max(1e9),
+  cost: z.number().finite().min(0).max(1e13).optional(),
   costKind: z.enum(["total", "perShare"]).optional(),
   account: z
     .string()
@@ -111,6 +111,9 @@ export async function POST(req: Request): Promise<Response> {
       const ac = new AbortController();
       const { signal } = ac;
       const timer = setTimeout(() => ac.abort(), BUDGET_MS);
+      const onClientAbort = () => ac.abort();
+      if (req.signal.aborted) ac.abort();
+      else req.signal.addEventListener("abort", onClientAbort, { once: true });
       const aborted = new Promise<never>((_, reject) => {
         signal.addEventListener("abort", () => reject(Object.assign(new Error("deadline"), { name: "AbortError" })), { once: true });
       });
@@ -153,6 +156,7 @@ export async function POST(req: Request): Promise<Response> {
         send({ type: "error", code: "analyze_failed" });
       } finally {
         clearTimeout(timer);
+        req.signal.removeEventListener("abort", onClientAbort);
         try {
           controller.close();
         } catch {

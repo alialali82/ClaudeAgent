@@ -89,12 +89,9 @@ describe("buildDashboard synthetic 5-holding portfolio", () => {
   });
 
   it("round-trips through JSON", () => {
-    expect(JSON.parse(JSON.stringify(d))).toEqual(d);
+    expect(JSON.parse(JSON.stringify(d))).toStrictEqual(d);
   });
 
-  it("uses previous targets for change rows without crashing", () => {
-    expect(Array.isArray(d.changes)).toBe(true);
-  });
 });
 
 describe("asof, prevAsof and performance from explicit closes", () => {
@@ -151,7 +148,7 @@ describe("asof, prevAsof and performance from explicit closes", () => {
     expect(s[0].d).toBe("2026-10-01");
     expect(s.at(-1)).toMatchObject({ d: "2026-10-07", v: 208, c: 190, g: 18 });
     expect(s[0].bSPY).toBeCloseTo(190, 6);
-    expect(JSON.parse(JSON.stringify(d))).toEqual(d);
+    expect(JSON.parse(JSON.stringify(d))).toStrictEqual(d);
   });
 });
 
@@ -184,7 +181,7 @@ describe("failures and edge cases", () => {
     expect(d.unpriced).toEqual(["AAA", "BBB"]);
     expect(d.failures).toHaveLength(2);
     expect(d.risk.concentration.over).toEqual([]);
-    expect(JSON.parse(JSON.stringify(d))).toEqual(d);
+    expect(JSON.parse(JSON.stringify(d))).toStrictEqual(d);
   });
 
   it("empty holdings give a valid empty dashboard", () => {
@@ -215,5 +212,115 @@ describe("failures and edge cases", () => {
       ),
     );
     expect(d.sourceNotes).toEqual([{ ticker: "MU", missing: ["calls", "zacks"] }]);
+  });
+});
+
+const mkm = (t: string, o: Partial<TickerMarket>): TickerMarket => ({
+  ticker: t,
+  name: t,
+  sector: "Technology",
+  price: 100,
+  prevClose: 100,
+  beta: 1,
+  sp: { avg: 120, low: 90, high: 150, n: 30 },
+  zacks: null,
+  calls: [],
+  closes: [],
+  errors: {},
+  ...o,
+});
+const h10 = (...ts: string[]): Holding[] => ts.map((ticker) => ({ ticker, shares: 10 }));
+const rows = (d: Dashboard, key: string) => d.changes.filter((c) => c.key === key).map((c) => c.text);
+
+describe("change rows from prevTargets", () => {
+  const market = {
+    // (a) +20% move, no range or status change
+    A: mkm("A", { price: 100, prevClose: 99, prevTargets: { sp: { avg: 100, low: 90, high: 150 }, zacks: null } }),
+    // (b) +3%: today (106+100)/2 = 103 vs prev (100+94... swapped) = (106+94)/2 = 100
+    B: mkm("B", {
+      sp: { avg: 106, low: 90, high: 150, n: 30 },
+      zacks: { avg: 100, low: 100, high: 100 },
+      prevTargets: { sp: { avg: 106, low: 90, high: 150 }, zacks: { avg: 94, low: 94, high: 94 } },
+    }),
+    // (c) range change only
+    C: mkm("C", { sp: { avg: 120, low: 95, high: 150, n: 30 }, prevTargets: { sp: { avg: 120, low: 90, high: 150 }, zacks: null } }),
+    // (d) status crossing: prevClose 118 < avg 120 -> price 130 > avg
+    D: mkm("D", { price: 130, prevClose: 118, prevTargets: { sp: { avg: 120, low: 90, high: 150 }, zacks: null } }),
+    // (e) no prevTargets, and a results date inside 14 days
+    E: mkm("E", { price: 100, prevClose: 90, sp: { avg: 80, low: 70, high: 90, n: 30 }, next: { date: "2026-10-12", what: "Q3 results", conf: false } }),
+  };
+  const d = check(buildDashboard(h10("A", "B", "C", "D", "E"), market, EMPTY_BENCH, TODAY));
+
+  it("(a) a >=5% move gives an exact Target row", () => {
+    expect(rows(d, "Target ≥5%")).toEqual(["A Street average $100.00 → $120.00 (+20.0%)."]);
+  });
+  it("(b) a 1-5% move uses the swapped prev zacks and sp", () => {
+    expect(rows(d, "Target moved")).toEqual(["B Street average $100.00 → $103.00 (+3.0%), under the 5% flag."]);
+  });
+  it("(c) a range change gives a Range row", () => {
+    expect(rows(d, "Range")).toEqual(["C target range now $95.00–$150.00 (was $90.00–$150.00)."]);
+  });
+  it("(d) a status crossing gives a Crossed row", () => {
+    expect(rows(d, "Crossed")).toEqual(["D moved from below its average target to above its average target."]);
+  });
+  it("(e) no prevTargets: no target/range/crossing rows for that ticker, calendar row present", () => {
+    for (const c of d.changes) if (c.key !== "Next 14 days" && c.key !== "Targets") expect(c.text.startsWith("E ")).toBe(false);
+    expect(rows(d, "Next 14 days")).toHaveLength(1);
+    expect(rows(d, "Next 14 days")[0]).toContain("E results");
+  });
+  it("adds the 'no 5% move' row only when no >=5% row exists", () => {
+    expect(rows(d, "Targets")).toEqual([]);
+    const d2 = check(buildDashboard(h10("B", "E"), { B: market.B, E: market.E }, EMPTY_BENCH, TODAY));
+    expect(rows(d2, "Targets")).toEqual(["No Street average moved 5% or more."]);
+    expect(d2.changes[0].key).toBe("Targets");
+  });
+});
+
+describe("server-computed returns", () => {
+  const hs: Holding[] = [
+    { ticker: "NVDA", shares: 10, cost: 2000, account: "X" },
+    { ticker: "MU", shares: 10, cost: 5000, account: "X" },
+    { ticker: "GOOGL", shares: 10, cost: 3000, account: "X" },
+    { ticker: "AMZN", shares: 10, account: "X" },
+    { ticker: "ADBE", shares: 10, account: "X" },
+    { ticker: "ALB", shares: 10, cost: 0, account: "Gift" },
+    { ticker: "UBER", shares: 10, account: "None" },
+  ];
+  const mk = buildDashboard(hs, subset("NVDA", "MU", "GOOGL", "AMZN", "ADBE", "ALB", "UBER"), EMPTY_BENCH, TODAY);
+  const d = check(mk);
+  const v = (t: string) => REF[t].price * 10;
+
+  it("account ret uses only costed lots (would fail with value/cost-1)", () => {
+    const x = d.accounts.find((a) => a.name === "X")!;
+    expect(x.cost).toBe(10000);
+    expect(x.costedValue).toBeCloseTo(v("NVDA") + v("MU") + v("GOOGL"), 6);
+    expect(x.ret).toBeCloseTo((v("NVDA") + v("MU") + v("GOOGL")) / 10000 - 1, 9);
+    expect(x.value / 10000 - 1).not.toBeCloseTo(x.ret as number, 3);
+  });
+  it("sector ret likewise", () => {
+    const t = d.sectors.find((s) => s.name === "Technology")!;
+    expect(t.cost).toBe(7000);
+    expect(t.costedValue).toBeCloseTo(v("NVDA") + v("MU"), 6);
+    expect(t.ret).toBeCloseTo((v("NVDA") + v("MU")) / 7000 - 1, 9);
+  });
+  it("a group whose only costed lot costs 0 has ret null", () => {
+    const g = d.accounts.find((a) => a.name === "Gift")!;
+    expect(g.cost).toBe(0);
+    expect(g.ret).toBeNull();
+  });
+  it("a group with no costed lots has cost null, costedValue 0, ret null", () => {
+    const g = d.accounts.find((a) => a.name === "None")!;
+    expect(g.cost).toBeNull();
+    expect(g.costedValue).toBe(0);
+    expect(g.ret).toBeNull();
+  });
+  it("top-level ret is over costed lots only", () => {
+    expect(d.cost).toBe(10000);
+    expect(d.ret).toBeCloseTo((v("NVDA") + v("MU") + v("GOOGL") + v("ALB")) / 10000 - 1, 9);
+  });
+  it("top-level ret is null with no costs or zero cost", () => {
+    expect(check(buildDashboard(h10("NVDA"), subset("NVDA"), EMPTY_BENCH, TODAY)).ret).toBeNull();
+    expect(check(buildDashboard([{ ticker: "NVDA", shares: 1, cost: 0 }], subset("NVDA"), EMPTY_BENCH, TODAY)).ret).toBeNull();
+    expect(check(buildDashboard([], {}, EMPTY_BENCH, TODAY)).ret).toBeNull();
   });
 });
