@@ -1,0 +1,9 @@
+CREDITS — Little Bear and the Unfinished Dark
+
+- Fonts (SIL Open Font License 1.1, @fontsource): Patrick Hand, Gaegu.
+- All images (paper tooth, wax adhesion, crayon strokes, bear, fridge) are drawn in code; no third-party images.
+- Narration voice: Kokoro-82M ('af_heart') via kokoro-onnx — model weights and code Apache-2.0 (https://github.com/thewh1teagle/kokoro-onnx, https://huggingface.co/hexgrad/Kokoro-82M). Phonemes: espeak-ng (GPL-3.0, used as a tool, not shipped).
+- Music and sound effects: synthesised from scratch with numpy/scipy for this film (synth.py, mix.py), using the library's core/audio helpers (sfx.py, pluck.py (nylon guitar / kalimba / music box / upright bass)). No sampled instruments or third-party recordings.
+- Rendering: Lemo-Opuscar library tools (core/render, headless Chromium). Final loudness master: ffmpeg (a static 7+/9 build taken from the PyPI package imageio-ffmpeg was used as a private tool; it is not part of the film).
+
+You are responsible for any material you add to this film. Nothing here is a trademark or character of an existing work.
